@@ -599,17 +599,17 @@
     }
 
     function generateScript() {
-        const vercelUrl = localStorage.getItem('vercelUrl');
-        const apiPath = localStorage.getItem('ghPath');
+        const storedVercelUrl = localStorage.getItem('vercelUrl');
+        const storedApiPath = localStorage.getItem('ghPath');
         
-        if (!vercelUrl || !apiPath) {
+        if (!storedVercelUrl || !storedApiPath) {
             document.getElementById('scriptOutput').textContent = '// Preencha e salve a URL da Vercel e o Caminho na aba "Configuração".';
             return;
         }
 
-        const cleanVercelUrl = vercelUrl.replace(/\/+$/, '');
-        const endpointPath = apiPath.replace(/\.m?js$/, '');
-        const endpoint = `${cleanVercelUrl}/${endpointPath}`;
+        const vercelUrl = storedVercelUrl.replace(/\/+$/, '');
+        const filePath = storedApiPath.replace(/\.m?js$/, '');
+        const endpoint = vercelUrl + '/' + filePath;
         const whiteUrl = document.getElementById('whiteUrl').value.trim();
 
         const scriptStr = `<script>
