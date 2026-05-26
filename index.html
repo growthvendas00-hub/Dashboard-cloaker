@@ -316,28 +316,28 @@
             
             <form id="configForm" onsubmit="saveConfig(event)">
                 <div class="form-group">
-                    <label for="ghToken">GitHub Personal Access Token</label>
-                    <input type="password" id="ghToken" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    <label for="gh-token">GitHub Personal Access Token</label>
+                    <input type="password" id="gh-token" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
                 </div>
                 
                 <div class="form-group">
-                    <label for="ghRepo">Repositório</label>
-                    <input type="text" id="ghRepo" required placeholder="usuario/repositorio">
+                    <label for="gh-repo">Repositório</label>
+                    <input type="text" id="gh-repo" required placeholder="usuario/repositorio">
                 </div>
                 
                 <div class="form-group">
-                    <label for="ghBranch">Branch</label>
-                    <input type="text" id="ghBranch" required value="main">
+                    <label for="gh-branch">Branch</label>
+                    <input type="text" id="gh-branch" value="main">
                 </div>
                 
                 <div class="form-group">
-                    <label for="ghPath">Caminho do arquivo</label>
-                    <input type="text" id="ghPath" required value="api/filtrar.mjs">
+                    <label for="gh-path">Caminho do arquivo</label>
+                    <input type="text" id="gh-path" value="api/filtrar.mjs">
                 </div>
                 
                 <div class="form-group">
-                    <label for="vercelUrl">URL Base da Vercel</label>
-                    <input type="url" id="vercelUrl" required placeholder="https://meu-projeto.vercel.app">
+                    <label for="vercel-url">URL Base da Vercel</label>
+                    <input type="url" id="vercel-url" placeholder="https://meu-projeto.vercel.app">
                 </div>
                 
                 <button type="submit" class="btn">Salvar no LocalStorage</button>
@@ -397,8 +397,12 @@
     let fileSha = null;
     let fileContentDecoded = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadConfig();
+    window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('gh-token').value  = localStorage.getItem('gh_token')  || '';
+        document.getElementById('gh-repo').value   = localStorage.getItem('gh_repo')   || '';
+        document.getElementById('gh-branch').value = localStorage.getItem('gh_branch') || 'main';
+        document.getElementById('gh-path').value   = localStorage.getItem('gh_path')   || 'api/filtrar.mjs';
+        document.getElementById('vercel-url').value= localStorage.getItem('vercel_url')|| '';
     });
 
     function switchTab(tabId) {
@@ -432,28 +436,31 @@
         el.style.color = isError ? 'var(--error-color)' : 'var(--text-secondary)';
     }
 
-    function loadConfig() {
-        const keys = ['ghToken', 'ghRepo', 'ghBranch', 'ghPath', 'vercelUrl'];
-        keys.forEach(key => {
-            const val = localStorage.getItem(key);
-            if (val) {
-                document.getElementById(key).value = val;
-            }
-        });
-    }
-
     function saveConfig(e) {
         e.preventDefault();
-        const keys = ['ghToken', 'ghRepo', 'ghBranch', 'ghPath', 'vercelUrl'];
-        keys.forEach(key => {
-            localStorage.setItem(key, document.getElementById(key).value.trim());
-        });
+        const token     = document.getElementById('gh-token').value.trim();
+        const repo      = document.getElementById('gh-repo').value.trim();
+        const branch    = document.getElementById('gh-branch').value.trim() || 'main';
+        const path      = document.getElementById('gh-path').value.trim() || 'api/filtrar.mjs';
+        const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
+
+        if (!token || !repo) {
+            showMessage('config-msg', 'Preencha ao menos o Token e o Repositório.', 'error');
+            return;
+        }
+
+        localStorage.setItem('gh_token',   token);
+        localStorage.setItem('gh_repo',    repo);
+        localStorage.setItem('gh_branch',  branch);
+        localStorage.setItem('gh_path',    path);
+        localStorage.setItem('vercel_url', vercelUrl);
+
         showMessage('config-msg', 'Configurações salvas no localStorage!', 'success');
         setTimeout(() => hideAllMessages(), 3000);
     }
 
     function getApiHeaders() {
-        const token = localStorage.getItem('ghToken');
+        const token = localStorage.getItem('gh_token');
         if (!token) throw new Error('GitHub Token não configurado.');
         
         return {
@@ -465,8 +472,8 @@
     }
 
     function getApiUrl() {
-        const repo = localStorage.getItem('ghRepo');
-        const path = localStorage.getItem('ghPath');
+        const repo = localStorage.getItem('gh_repo');
+        const path = localStorage.getItem('gh_path');
         if (!repo || !path) throw new Error('Repositório ou Caminho não configurados.');
         return `https://api.github.com/repos/${repo}/contents/${path}`;
     }
@@ -489,7 +496,7 @@
         updateDeployStatus('');
 
         try {
-            const branch = localStorage.getItem('ghBranch') || 'main';
+            const branch = localStorage.getItem('gh_branch') || 'main';
             const url = `${getApiUrl()}?ref=${branch}`;
             
             const res = await fetch(url, { headers: getApiHeaders() });
@@ -544,7 +551,7 @@
         try {
             updateDeployStatus('Buscando arquivo atualizado...');
             
-            const branch = localStorage.getItem('ghBranch') || 'main';
+            const branch = localStorage.getItem('gh_branch') || 'main';
             const url = getApiUrl();
             
             // Fetch mais recente para evitar conflito de SHA
@@ -599,17 +606,15 @@
     }
 
     function generateScript() {
-        const storedVercelUrl = localStorage.getItem('vercelUrl');
-        const storedApiPath = localStorage.getItem('ghPath');
-        
-        if (!storedVercelUrl || !storedApiPath) {
+        const vercelUrl = (localStorage.getItem('vercel_url') || '').replace(/\/$/, '');
+        const ghPath    = (localStorage.getItem('gh_path') || 'api/filtrar.mjs').replace(/\.mjs$/, '');
+        const endpoint  = vercelUrl + '/' + ghPath;
+
+        if (!vercelUrl) {
             document.getElementById('scriptOutput').textContent = '// Preencha e salve a URL da Vercel e o Caminho na aba "Configuração".';
             return;
         }
 
-        const vercelUrl = storedVercelUrl.replace(/\/+$/, '');
-        const filePath = storedApiPath.replace(/\.m?js$/, '');
-        const endpoint = vercelUrl + '/' + filePath;
         const whiteUrl = document.getElementById('whiteUrl').value.trim();
 
         const scriptStr = `<script>
@@ -657,6 +662,8 @@
             console.error('Falha ao copiar:', err);
             showMessage('script-msg', 'Erro ao copiar.', 'error');
         });
+    }
+
     function checkUrlProtocol() {
         const val = document.getElementById('newMobileLink').value.trim();
         const warning = document.getElementById('url-warning');
