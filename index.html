@@ -294,6 +294,89 @@
             font-weight: 500;
             color: var(--text-primary);
         }
+
+        /* Logs Tab */
+        .logs-toolbar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .logs-table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .logs-table th {
+            background: rgba(0,0,0,0.3);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .logs-table td {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-primary);
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .logs-table tr:hover td {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .badge-red {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .logs-empty {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .destination-cell {
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+        }
     </style>
 </head>
 <body>
@@ -305,6 +388,7 @@
             <button class="nav-item active" onclick="switchTab('config')">Configuração</button>
             <button class="nav-item" onclick="switchTab('mobile')">Link Mobile</button>
             <button class="nav-item" onclick="switchTab('script')">Gerar Script</button>
+            <button class="nav-item" onclick="switchTab('logs')">Logs</button>
         </nav>
     </aside>
 
@@ -390,10 +474,163 @@
             
             <button type="button" class="btn" onclick="copyScript()">Copiar Script</button>
         </div>
+
+        <!-- TAB LOGS -->
+        <div id="tab-logs" class="tab-content">
+            <h2>Logs de Acesso</h2>
+            <div id="logs-msg" class="alert"></div>
+
+            <!-- Configuração Upstash -->
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem;">
+                <p style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 1rem;">Credenciais Upstash Redis</p>
+                <div class="form-group">
+                    <label for="upstash-url">URL do Redis</label>
+                    <input type="url" id="upstash-url" placeholder="https://humane-ibex-137301.upstash.io">
+                </div>
+                <div class="form-group">
+                    <label for="upstash-token">Token</label>
+                    <input type="password" id="upstash-token" placeholder="Token do Upstash">
+                </div>
+                <button type="button" class="btn" onclick="saveUpstashConfig()">Salvar credenciais</button>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="logs-toolbar">
+                <button type="button" class="btn" onclick="fetchLogs()" id="btnFetchLogs">&#x21bb; Atualizar logs</button>
+                <button type="button" class="btn btn-outline" onclick="clearLogs()" id="btnClearLogs">Limpar logs</button>
+                <span id="logs-count" style="color: var(--text-secondary); font-size: 0.875rem; margin-left: auto;"></span>
+            </div>
+
+            <!-- Tabela -->
+            <div class="logs-table-wrapper">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Dispositivo</th>
+                            <th>IP</th>
+                            <th>Ação</th>
+                            <th>Motivo</th>
+                            <th>Destino</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-tbody">
+                        <tr><td colspan="6" class="logs-empty">Clique em "Atualizar logs" para carregar.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 </div>
 
 <script>
+    // ---- Logs / Upstash ----
+    window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('upstash-url').value   = localStorage.getItem('upstash_url')   || '';
+        document.getElementById('upstash-token').value = localStorage.getItem('upstash_token') || '';
+    });
+
+    function saveUpstashConfig() {
+        const url   = document.getElementById('upstash-url').value.trim().replace(/\/$/, '');
+        const token = document.getElementById('upstash-token').value.trim();
+        if (!url || !token) {
+            showMessage('logs-msg', 'Preencha a URL e o Token do Upstash.', 'error');
+            return;
+        }
+        localStorage.setItem('upstash_url',   url);
+        localStorage.setItem('upstash_token', token);
+        showMessage('logs-msg', 'Credenciais salvas!', 'success');
+        setTimeout(() => hideAllMessages(), 3000);
+    }
+
+    function getUpstashCreds() {
+        const url   = localStorage.getItem('upstash_url');
+        const token = localStorage.getItem('upstash_token');
+        if (!url || !token) throw new Error('Configure e salve as credenciais do Upstash primeiro.');
+        return { url, token };
+    }
+
+    async function fetchLogs() {
+        const btn = document.getElementById('btnFetchLogs');
+        btn.disabled = true;
+        btn.textContent = 'Carregando...';
+        hideAllMessages();
+        try {
+            const { url, token } = getUpstashCreds();
+            const res = await fetch(`${url}/lrange/cloaker_logs/0/99`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error(`Erro HTTP ${res.status} ao buscar logs.`);
+            const data = await res.json();
+            const logs = (data.result || []).map(entry => {
+                try { return JSON.parse(entry); } catch { return null; }
+            }).filter(Boolean);
+            renderLogs(logs);
+            document.getElementById('logs-count').textContent = `${logs.length} registro(s)`;
+        } catch (e) {
+            showMessage('logs-msg', e.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '↻ Atualizar logs';
+        }
+    }
+
+    function renderLogs(logs) {
+        const tbody = document.getElementById('logs-tbody');
+        if (!logs.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="logs-empty">Nenhum log encontrado.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = logs.map(log => {
+            const dt = log.timestamp
+                ? new Date(log.timestamp).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' })
+                : '—';
+            const deviceIcon = log.device === 'mobile'
+                ? '📱 mobile'
+                : '🖥️ desktop';
+            const isApproved = log.action === 'redirect';
+            const badge = isApproved
+                ? '<span class="badge badge-green">✔ approved</span>'
+                : '<span class="badge badge-red">✖ blocked</span>';
+            const dest = log.destination && log.destination !== 'blocked'
+                ? `<span class="destination-cell" title="${log.destination}">${log.destination}</span>`
+                : '<span style="color:var(--text-secondary)">—</span>';
+            return `<tr>
+                <td>${dt}</td>
+                <td>${deviceIcon}</td>
+                <td>${log.ip || '—'}</td>
+                <td>${badge}</td>
+                <td>${log.reason || '—'}</td>
+                <td>${dest}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    async function clearLogs() {
+        if (!confirm('Tem certeza que deseja apagar todos os logs?')) return;
+        const btn = document.getElementById('btnClearLogs');
+        btn.disabled = true;
+        hideAllMessages();
+        try {
+            const { url, token } = getUpstashCreds();
+            const res = await fetch(`${url}/del/cloaker_logs`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error(`Erro HTTP ${res.status} ao limpar logs.`);
+            document.getElementById('logs-tbody').innerHTML =
+                '<tr><td colspan="6" class="logs-empty">Logs apagados com sucesso.</td></tr>';
+            document.getElementById('logs-count').textContent = '0 registro(s)';
+            showMessage('logs-msg', 'Logs apagados!', 'success');
+            setTimeout(() => hideAllMessages(), 3000);
+        } catch (e) {
+            showMessage('logs-msg', e.message, 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+    // ---- fim Logs ----
+
     let fileSha = null;
     let fileContentDecoded = null;
 
