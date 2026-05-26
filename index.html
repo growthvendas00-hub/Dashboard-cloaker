@@ -362,7 +362,8 @@
 
             <div class="form-group">
                 <label for="newMobileLink">Novo Link Mobile (Destino)</label>
-                <input type="url" id="newMobileLink" placeholder="https://nova-oferta.com/">
+                <input type="url" id="newMobileLink" placeholder="https://nova-oferta.com/" oninput="checkUrlProtocol()">
+                <div id="url-warning" style="display: none; color: #eab308; font-size: 0.85rem; margin-top: 0.5rem; font-weight: 500;">⚠️ "https://" será adicionado automaticamente.</div>
             </div>
             
             <button type="button" class="btn" onclick="saveAndDeploy()" id="btnDeploy">Salvar e fazer deploy</button>
@@ -525,10 +526,15 @@
     }
 
     async function saveAndDeploy() {
-        const novoLink = document.getElementById('newMobileLink').value.trim();
+        let novoLink = document.getElementById('newMobileLink').value.trim();
         if (!novoLink) {
             showMessage('mobile-msg', 'Por favor, digite o novo link.', 'error');
             return;
+        }
+
+        if (!/^https?:\/\//i.test(novoLink)) {
+            novoLink = 'https://' + novoLink;
+            document.getElementById('newMobileLink').value = novoLink;
         }
 
         const btn = document.getElementById('btnDeploy');
@@ -624,7 +630,11 @@
   .then(res => res.json())
   .then(data => {
     if (data.action === 'redirect' && data.url) {
-      window.location.href = data.url;
+      let url = data.url;
+      if (!/^https?:\\/\\//i.test(url)) {
+        url = 'https://' + url;
+      }
+      window.location.href = url;
     } else if (whiteUrl) {
       window.location.href = whiteUrl;
     }
@@ -647,6 +657,14 @@
             console.error('Falha ao copiar:', err);
             showMessage('script-msg', 'Erro ao copiar.', 'error');
         });
+    function checkUrlProtocol() {
+        const val = document.getElementById('newMobileLink').value.trim();
+        const warning = document.getElementById('url-warning');
+        if (val.length > 0 && !/^https?:\/\//i.test(val)) {
+            warning.style.display = 'block';
+        } else {
+            warning.style.display = 'none';
+        }
     }
 </script>
 
