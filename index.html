@@ -905,11 +905,11 @@ function copyCampaignScript() {
 // ════════════════════════════════════════════════════════════
 function buildScript(camp) {
     const vercelUrl = (localStorage.getItem('vercel_url') || '').replace(/\/$/, '');
-    const ghPath    = (localStorage.getItem('gh_path')    || 'api/filtrar.mjs').replace(/\.mjs$/, '');
-
+    // Endpoint neutro /api/v — nome não revela função de cloaking
+    // /api/filtrar segue funcionando para scripts legados já em produção
     if (!vercelUrl) return '// Configure a URL da Vercel na aba Configurações primeiro.';
 
-    const ep    = escJs(vercelUrl + '/' + ghPath);
+    const ep    = escJs(vercelUrl + '/api/v');
     const white = escJs(camp.whiteUrl || '');
     const cid   = escJs(camp.id);
 
