@@ -563,7 +563,11 @@
             if (!res.ok) throw new Error(`Erro HTTP ${res.status} ao buscar logs.`);
             const data = await res.json();
             const logs = (data.result || []).map(entry => {
-                try { return JSON.parse(entry); } catch { return null; }
+                try {
+                    const parsed = JSON.parse(entry);
+                    // Versões antigas faziam double-stringify
+                    return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
+                } catch { return null; }
             }).filter(Boolean);
             renderLogs(logs);
             document.getElementById('logs-count').textContent = `${logs.length} registro(s)`;
@@ -582,25 +586,30 @@
             return;
         }
         tbody.innerHTML = logs.map(log => {
-            const dt = log.timestamp
-                ? new Date(log.timestamp).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' })
+            // Suporte a nomes de campo antigos (timestamp/device/action/reason/destination)
+            // e novos (t/dv/ac/rs/dst)
+            const ts  = log.t  || log.timestamp  || '';
+            const dv  = log.dv || log.device     || 'desktop';
+            const ac  = log.ac || (log.action === 'redirect' ? 'approved' : (log.action === 'allow_white' ? 'blocked' : log.action)) || 'blocked';
+            const rs  = log.rs || log.reason     || '—';
+            const dst = log.dst || log.destination || '';
+
+            const dt = ts
+                ? new Date(ts).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' })
                 : '—';
-            const deviceIcon = log.device === 'mobile'
-                ? '📱 mobile'
-                : '🖥️ desktop';
-            const isApproved = log.action === 'redirect';
-            const badge = isApproved
+            const deviceIcon = dv === 'mobile' ? '📱 mobile' : '🖥️ desktop';
+            const badge = ac === 'approved'
                 ? '<span class="badge badge-green">✔ approved</span>'
                 : '<span class="badge badge-red">✖ blocked</span>';
-            const dest = log.destination && log.destination !== 'blocked'
-                ? `<span class="destination-cell" title="${log.destination}">${log.destination}</span>`
+            const dest = dst && dst !== 'blocked'
+                ? `<span class="destination-cell" title="${dst}">${dst}</span>`
                 : '<span style="color:var(--text-secondary)">—</span>';
             return `<tr>
                 <td>${dt}</td>
                 <td>${deviceIcon}</td>
                 <td>${log.ip || '—'}</td>
                 <td>${badge}</td>
-                <td>${log.reason || '—'}</td>
+                <td>${rs}</td>
                 <td>${dest}</td>
             </tr>`;
         }).join('');
