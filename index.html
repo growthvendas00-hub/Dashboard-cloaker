@@ -375,8 +375,9 @@
                         <option value="500">Últimos 500</option>
                     </select>
                 </div>
-                <div style="padding-bottom:1.5rem;">
+                <div style="padding-bottom:1.5rem;display:flex;gap:0.75rem;">
                     <button type="button" class="btn" onclick="loadLogs()" id="btnRefresh">🔄 Atualizar</button>
+                    <button type="button" class="btn btn-outline" onclick="clearLogs()" style="border-color:var(--error-color);color:var(--error-color);">🗑️ Limpar Logs</button>
                 </div>
             </div>
 
@@ -658,6 +659,34 @@
         return '<span class="badge badge-blocked">blocked</span>';
     }
 
+    // Normaliza entrada de log — compatível com formatos antigos e novos
+    function parseLogEntry(raw) {
+        if (!raw) return null;
+        let obj;
+        try {
+            const first = JSON.parse(raw);
+            // Versões antigas faziam double-stringify: o resultado do parse ainda é uma string
+            obj = typeof first === 'string' ? JSON.parse(first) : first;
+        } catch { return null; }
+        if (!obj || typeof obj !== 'object') return null;
+
+        // Mapear nomes antigos para nomes novos
+        const ac_raw = obj.ac || obj.action || '';
+        // Versão antiga usava 'allow_white'/'redirect' — converter para 'blocked'/'approved'
+        let ac;
+        if (ac_raw === 'approved' || ac_raw === 'redirect') ac = 'approved';
+        else ac = 'blocked';
+
+        return {
+            t:   obj.t   || obj.timestamp   || '',
+            ip:  obj.ip  || '',
+            dv:  obj.dv  || obj.device      || 'desktop',
+            ac,
+            rs:  obj.rs  || obj.reason      || '',
+            dst: obj.dst || obj.destination || '',
+        };
+    }
+
     async function loadLogs() {
         const btn = document.getElementById('btnRefresh');
         const tbody = document.getElementById('logsTableBody');
@@ -697,8 +726,8 @@
             }
 
             const rows = entries.map(raw => {
-                let log;
-                try { log = JSON.parse(raw); } catch { return ''; }
+                const log = parseLogEntry(raw);
+                if (!log) return '';
 
                 const dest = log.dst
                     ? `<div class="dest-url"><a href="${escHtml(log.dst)}" target="_blank" title="${escHtml(log.dst)}">${escHtml(log.dst)}</a></div>`
@@ -724,6 +753,31 @@
         } finally {
             btn.disabled = false;
             btn.textContent = '🔄 Atualizar';
+        }
+    }
+
+    async function clearLogs() {
+        if (!confirm('Apagar todos os logs do Redis? Esta ação não pode ser desfeita.')) return;
+
+        const redisUrl   = localStorage.getItem('upstash_url');
+        const redisToken = localStorage.getItem('upstash_token');
+        if (!redisUrl || !redisToken) {
+            showMessage('logs-msg', 'Configure a URL e o Token do Upstash na aba Configuração.', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch(`${redisUrl}/del/cloaker_logs`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${redisToken}` }
+            });
+            if (!res.ok) throw new Error(`Upstash retornou ${res.status}`);
+            showMessage('logs-msg', 'Logs apagados com sucesso.', 'success');
+            document.getElementById('logsTableBody').innerHTML =
+                '<tr class="empty-row"><td colspan="6">Nenhum log encontrado.</td></tr>';
+            updateStatus('logsStatus', '0 registros encontrados.');
+        } catch (error) {
+            showMessage('logs-msg', 'Erro ao apagar logs: ' + error.message, 'error');
         }
     }
 
