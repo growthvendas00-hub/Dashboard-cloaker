@@ -18,12 +18,8 @@
             --glass-bg: rgba(30, 41, 59, 0.7);
             --glass-border: rgba(255, 255, 255, 0.1);
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -32,7 +28,7 @@
             line-height: 1.5;
             min-height: 100vh;
             display: flex;
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
             background-attachment: fixed;
@@ -40,7 +36,7 @@
 
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 2rem auto;
             padding: 0 1rem;
             display: grid;
@@ -50,12 +46,9 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
+            .container { grid-template-columns: 1fr; }
         }
 
-        /* Sidebar */
         .sidebar {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -92,18 +85,9 @@
             margin-bottom: 0.5rem;
         }
 
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+        .nav-item.active { background: var(--accent-color); color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
 
-        .nav-item.active {
-            background: var(--accent-color);
-            color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        /* Main Content */
         .main-content {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -115,30 +99,17 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
 
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; animation: fadeIn 0.4s ease-out forwards; }
+        .tab-content.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        h2 {
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            color: var(--text-primary);
-        }
+        h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 2rem; color: var(--text-primary); }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+        .form-group { margin-bottom: 1.5rem; }
 
         label {
             display: block;
@@ -153,7 +124,7 @@
         input[type="url"] {
             width: 100%;
             padding: 0.875rem 1rem;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0,0,0,0.25);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-primary);
@@ -162,11 +133,7 @@
             transition: all 0.2s ease;
         }
 
-        input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
+        input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
 
         .btn {
             display: inline-flex;
@@ -181,35 +148,20 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .btn:hover:not(:disabled) {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
-        }
+        .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(59,130,246,0.3); }
+        .btn:active:not(:disabled) { transform: translateY(0); }
 
-        .btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-        
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             box-shadow: none;
         }
-        
-        .btn-outline:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--text-secondary);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+        .btn-outline:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: var(--text-secondary); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .alert {
             padding: 1rem 1.25rem;
@@ -221,24 +173,12 @@
             gap: 0.5rem;
             animation: fadeIn 0.3s ease-out;
         }
-
-        .alert.success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            display: flex;
-        }
-
-        .alert.error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            display: flex;
-        }
+        .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #34d399; display: flex; }
+        .alert.error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.2);  color: #f87171;  display: flex; }
 
         .code-block {
             position: relative;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.5);
             border-radius: 8px;
             padding: 1.5rem;
             overflow-x: auto;
@@ -254,14 +194,8 @@
             line-height: 1.6;
         }
 
-        .status-text {
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            color: var(--text-secondary);
-            min-height: 1.5rem;
-            font-weight: 500;
-        }
-        
+        .status-text { font-size: 0.9rem; margin-top: 1rem; color: var(--text-secondary); min-height: 1.5rem; font-weight: 500; }
+
         .current-link-display {
             background: rgba(0,0,0,0.25);
             padding: 1.5rem;
@@ -272,28 +206,60 @@
             position: relative;
             overflow: hidden;
         }
+        .current-link-display::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-color); }
+        .current-link-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600; }
+        .current-link-value { font-size: 1.15rem; font-weight: 500; color: var(--text-primary); }
 
-        .current-link-display::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--accent-color);
+        /* Logs Table */
+        .logs-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
         }
-        
-        .current-link-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
+        .logs-controls .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
+
+        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead th {
+            background: rgba(0,0,0,0.4);
+            padding: 0.75rem 1rem;
+            text-align: left;
             font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border-color);
         }
-        
-        .current-link-value {
-            font-size: 1.15rem;
-            font-weight: 500;
-            color: var(--text-primary);
+
+        tbody tr { border-bottom: 1px solid rgba(51,65,85,0.5); transition: background 0.15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody td { padding: 0.75rem 1rem; vertical-align: middle; color: var(--text-primary); }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
+        .badge-approved { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-blocked  { background: rgba(239,68,68,0.15);  color: #f87171;  border: 1px solid rgba(239,68,68,0.3); }
+
+        .dest-url { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 0.8rem; }
+        .dest-url a { color: #60a5fa; text-decoration: none; }
+        .dest-url a:hover { text-decoration: underline; }
+
+        .empty-row td { text-align: center; color: var(--text-secondary); padding: 2rem; }
     </style>
 </head>
 <body>
@@ -302,9 +268,10 @@
     <aside class="sidebar">
         <div class="sidebar-title">Dashboard</div>
         <nav>
-            <button class="nav-item active" onclick="switchTab('config')">Configuração</button>
-            <button class="nav-item" onclick="switchTab('mobile')">Link Mobile</button>
-            <button class="nav-item" onclick="switchTab('script')">Gerar Script</button>
+            <button class="nav-item active" onclick="switchTab('config')">⚙️ Configuração</button>
+            <button class="nav-item" onclick="switchTab('mobile')">📱 Link Mobile</button>
+            <button class="nav-item" onclick="switchTab('script')">📋 Gerar Script</button>
+            <button class="nav-item" onclick="switchTab('logs')">📊 Logs</button>
         </nav>
     </aside>
 
@@ -313,33 +280,36 @@
         <div id="tab-config" class="tab-content active">
             <h2>Configurações da API</h2>
             <div id="config-msg" class="alert"></div>
-            
+
             <form id="configForm" onsubmit="saveConfig(event)">
                 <div class="form-group">
                     <label for="gh-token">GitHub Personal Access Token</label>
                     <input type="password" id="gh-token" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
                 </div>
-                
                 <div class="form-group">
                     <label for="gh-repo">Repositório</label>
                     <input type="text" id="gh-repo" required placeholder="usuario/repositorio">
                 </div>
-                
                 <div class="form-group">
                     <label for="gh-branch">Branch</label>
                     <input type="text" id="gh-branch" value="main">
                 </div>
-                
                 <div class="form-group">
                     <label for="gh-path">Caminho do arquivo</label>
                     <input type="text" id="gh-path" value="api/filtrar.mjs">
                 </div>
-                
                 <div class="form-group">
                     <label for="vercel-url">URL Base da Vercel</label>
                     <input type="url" id="vercel-url" placeholder="https://meu-projeto.vercel.app">
                 </div>
-                
+                <div class="form-group">
+                    <label for="upstash-url">Upstash Redis REST URL</label>
+                    <input type="url" id="upstash-url" placeholder="https://xxxx.upstash.io">
+                </div>
+                <div class="form-group">
+                    <label for="upstash-token">Upstash Redis REST Token</label>
+                    <input type="password" id="upstash-token" placeholder="AXxx...">
+                </div>
                 <button type="submit" class="btn">Salvar no LocalStorage</button>
             </form>
         </div>
@@ -348,7 +318,7 @@
         <div id="tab-mobile" class="tab-content">
             <h2>Atualizar Link Mobile</h2>
             <div id="mobile-msg" class="alert"></div>
-            
+
             <div class="current-link-display">
                 <div class="current-link-label">Link Atual (ofertaBlack)</div>
                 <div class="current-link-value" id="currentLinkValue">Desconhecido. Clique em "Ler arquivo atual".</div>
@@ -357,17 +327,16 @@
             <div class="form-group">
                 <button type="button" class="btn btn-outline" onclick="readCurrentFile()" id="btnRead">Ler arquivo atual</button>
             </div>
-            
+
             <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
 
             <div class="form-group">
                 <label for="newMobileLink">Novo Link Mobile (Destino)</label>
                 <input type="url" id="newMobileLink" placeholder="https://nova-oferta.com/" oninput="checkUrlProtocol()">
-                <div id="url-warning" style="display: none; color: #eab308; font-size: 0.85rem; margin-top: 0.5rem; font-weight: 500;">⚠️ "https://" será adicionado automaticamente.</div>
+                <div id="url-warning" style="display:none;color:#eab308;font-size:0.85rem;margin-top:0.5rem;font-weight:500;">⚠️ "https://" será adicionado automaticamente.</div>
             </div>
-            
+
             <button type="button" class="btn" onclick="saveAndDeploy()" id="btnDeploy">Salvar e fazer deploy</button>
-            
             <div class="status-text" id="deployStatus"></div>
         </div>
 
@@ -375,7 +344,7 @@
         <div id="tab-script" class="tab-content">
             <h2>Script de Integração</h2>
             <div id="script-msg" class="alert"></div>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">
+            <p style="color:var(--text-secondary);margin-bottom:2rem;font-size:0.95rem;">
                 Configure a URL de fallback se desejar, e copie o script abaixo para colar dentro do <code>&lt;head&gt;</code> ou no final do <code>&lt;body&gt;</code> do seu site de origem.
             </p>
 
@@ -383,12 +352,53 @@
                 <label for="whiteUrl">URL White (Fallback Desktop) - Opcional</label>
                 <input type="url" id="whiteUrl" placeholder="https://meusite-seguro.com/" oninput="generateScript()">
             </div>
-            
+
             <div class="code-block">
                 <pre id="scriptOutput">// Configure e salve a aba 'Configuração' primeiro.</pre>
             </div>
-            
+
             <button type="button" class="btn" onclick="copyScript()">Copiar Script</button>
+        </div>
+
+        <!-- TAB LOGS -->
+        <div id="tab-logs" class="tab-content">
+            <h2>Logs de Acesso</h2>
+            <div id="logs-msg" class="alert"></div>
+
+            <div class="logs-controls">
+                <div class="form-group">
+                    <label>Quantidade de registros</label>
+                    <select id="logsLimit" style="width:100%;padding:0.875rem 1rem;background:rgba(0,0,0,0.25);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.95rem;">
+                        <option value="50">Últimos 50</option>
+                        <option value="100" selected>Últimos 100</option>
+                        <option value="200">Últimos 200</option>
+                        <option value="500">Últimos 500</option>
+                    </select>
+                </div>
+                <div style="padding-bottom:1.5rem;">
+                    <button type="button" class="btn" onclick="loadLogs()" id="btnRefresh">🔄 Atualizar</button>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data / Hora</th>
+                            <th>Dispositivo</th>
+                            <th>IP</th>
+                            <th>Ação</th>
+                            <th>Motivo</th>
+                            <th>Destino</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr class="empty-row"><td colspan="6">Clique em "Atualizar" para carregar os logs.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="status-text" id="logsStatus"></div>
         </div>
     </main>
 </div>
@@ -398,25 +408,23 @@
     let fileContentDecoded = null;
 
     window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('gh-token').value  = localStorage.getItem('gh_token')  || '';
-        document.getElementById('gh-repo').value   = localStorage.getItem('gh_repo')   || '';
-        document.getElementById('gh-branch').value = localStorage.getItem('gh_branch') || 'main';
-        document.getElementById('gh-path').value   = localStorage.getItem('gh_path')   || 'api/filtrar.mjs';
-        document.getElementById('vercel-url').value= localStorage.getItem('vercel_url')|| '';
+        document.getElementById('gh-token').value     = localStorage.getItem('gh_token')       || '';
+        document.getElementById('gh-repo').value      = localStorage.getItem('gh_repo')        || '';
+        document.getElementById('gh-branch').value    = localStorage.getItem('gh_branch')      || 'main';
+        document.getElementById('gh-path').value      = localStorage.getItem('gh_path')        || 'api/filtrar.mjs';
+        document.getElementById('vercel-url').value   = localStorage.getItem('vercel_url')     || '';
+        document.getElementById('upstash-url').value  = localStorage.getItem('upstash_url')    || '';
+        document.getElementById('upstash-token').value= localStorage.getItem('upstash_token')  || '';
     });
 
     function switchTab(tabId) {
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        
         document.querySelector(`.nav-item[onclick="switchTab('${tabId}')"]`).classList.add('active');
         document.getElementById(`tab-${tabId}`).classList.add('active');
-        
         hideAllMessages();
-
-        if (tabId === 'script') {
-            generateScript();
-        }
+        if (tabId === 'script') generateScript();
+        if (tabId === 'logs') loadLogs();
     }
 
     function showMessage(id, message, type) {
@@ -430,30 +438,35 @@
         document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
     }
 
-    function updateDeployStatus(msg, isError = false) {
-        const el = document.getElementById('deployStatus');
+    function updateStatus(elId, msg, isError = false) {
+        const el = document.getElementById(elId);
+        if (!el) return;
         el.textContent = msg;
         el.style.color = isError ? 'var(--error-color)' : 'var(--text-secondary)';
     }
 
     function saveConfig(e) {
         e.preventDefault();
-        const token     = document.getElementById('gh-token').value.trim();
-        const repo      = document.getElementById('gh-repo').value.trim();
-        const branch    = document.getElementById('gh-branch').value.trim() || 'main';
-        const path      = document.getElementById('gh-path').value.trim() || 'api/filtrar.mjs';
-        const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
+        const token        = document.getElementById('gh-token').value.trim();
+        const repo         = document.getElementById('gh-repo').value.trim();
+        const branch       = document.getElementById('gh-branch').value.trim() || 'main';
+        const path         = document.getElementById('gh-path').value.trim() || 'api/filtrar.mjs';
+        const vercelUrl    = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
+        const upstashUrl   = document.getElementById('upstash-url').value.trim().replace(/\/$/, '');
+        const upstashToken = document.getElementById('upstash-token').value.trim();
 
         if (!token || !repo) {
             showMessage('config-msg', 'Preencha ao menos o Token e o Repositório.', 'error');
             return;
         }
 
-        localStorage.setItem('gh_token',   token);
-        localStorage.setItem('gh_repo',    repo);
-        localStorage.setItem('gh_branch',  branch);
-        localStorage.setItem('gh_path',    path);
-        localStorage.setItem('vercel_url', vercelUrl);
+        localStorage.setItem('gh_token',      token);
+        localStorage.setItem('gh_repo',       repo);
+        localStorage.setItem('gh_branch',     branch);
+        localStorage.setItem('gh_path',       path);
+        localStorage.setItem('vercel_url',    vercelUrl);
+        localStorage.setItem('upstash_url',   upstashUrl);
+        localStorage.setItem('upstash_token', upstashToken);
 
         showMessage('config-msg', 'Configurações salvas no localStorage!', 'success');
         setTimeout(() => hideAllMessages(), 3000);
@@ -462,7 +475,6 @@
     function getApiHeaders() {
         const token = localStorage.getItem('gh_token');
         if (!token) throw new Error('GitHub Token não configurado.');
-        
         return {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/vnd.github+json',
@@ -478,14 +490,8 @@
         return `https://api.github.com/repos/${repo}/contents/${path}`;
     }
 
-    // Funções de base64 solicitadas para manter codificação original
-    function decodeBase64(b64) {
-        return decodeURIComponent(escape(atob(b64)));
-    }
-
-    function encodeBase64(str) {
-        return btoa(unescape(encodeURIComponent(str)));
-    }
+    function decodeBase64(b64) { return decodeURIComponent(escape(atob(b64))); }
+    function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
 
     async function readCurrentFile() {
         hideAllMessages();
@@ -493,36 +499,27 @@
         const prevText = btn.textContent;
         btn.textContent = 'Buscando...';
         btn.disabled = true;
-        updateDeployStatus('');
+        updateStatus('deployStatus', '');
 
         try {
             const branch = localStorage.getItem('gh_branch') || 'main';
-            const url = `${getApiUrl()}?ref=${branch}`;
-            
-            const res = await fetch(url, { headers: getApiHeaders() });
-            
+            const res = await fetch(`${getApiUrl()}?ref=${branch}`, { headers: getApiHeaders() });
             if (!res.ok) {
-                const errData = await res.json().catch(()=>({}));
+                const errData = await res.json().catch(() => ({}));
                 throw new Error(errData.message || `Erro HTTP: ${res.status}`);
             }
-
             const data = await res.json();
             fileSha = data.sha;
             fileContentDecoded = decodeBase64(data.content);
-            
-            // Regex que captura ofertaBlack ou jsofertaBlack com aspas simples ou duplas
             const regex = /(ofertaBlack:\s*['"])([^'"]+)(['"])/;
             const match = fileContentDecoded.match(regex);
-            
             if (match && match[2]) {
-                const currentLink = match[2];
-                document.getElementById('currentLinkValue').textContent = currentLink;
+                document.getElementById('currentLinkValue').textContent = match[2];
                 showMessage('mobile-msg', 'Arquivo lido com sucesso!', 'success');
             } else {
                 document.getElementById('currentLinkValue').textContent = 'Não encontrado no arquivo.';
-                throw new Error("A variável 'ofertaBlack' não foi encontrada usando a regex esperada.");
+                throw new Error("A variável 'ofertaBlack' não foi encontrada.");
             }
-
         } catch (error) {
             console.error(error);
             showMessage('mobile-msg', error.message, 'error');
@@ -538,68 +535,43 @@
             showMessage('mobile-msg', 'Por favor, digite o novo link.', 'error');
             return;
         }
-
         if (!/^https?:\/\//i.test(novoLink)) {
             novoLink = 'https://' + novoLink;
             document.getElementById('newMobileLink').value = novoLink;
         }
-
         const btn = document.getElementById('btnDeploy');
         btn.disabled = true;
         hideAllMessages();
-        
         try {
-            updateDeployStatus('Buscando arquivo atualizado...');
-            
+            updateStatus('deployStatus', 'Buscando arquivo atualizado...');
             const branch = localStorage.getItem('gh_branch') || 'main';
             const url = getApiUrl();
-            
-            // Fetch mais recente para evitar conflito de SHA
             const resGet = await fetch(`${url}?ref=${branch}`, { headers: getApiHeaders() });
             if (!resGet.ok) throw new Error('Falha ao ler o arquivo no repositório.');
             const dataGet = await resGet.json();
-            
             fileSha = dataGet.sha;
             fileContentDecoded = decodeBase64(dataGet.content);
-
-            updateDeployStatus('Fazendo commit...');
-            
+            updateStatus('deployStatus', 'Fazendo commit...');
             const regex = /(ofertaBlack:\s*['"])([^'"]+)(['"])/;
-            if (!regex.test(fileContentDecoded)) {
-                throw new Error('A variável "ofertaBlack" não pôde ser localizada no código atual.');
-            }
-
+            if (!regex.test(fileContentDecoded)) throw new Error('A variável "ofertaBlack" não pôde ser localizada no código atual.');
             const newContent = fileContentDecoded.replace(regex, `$1${novoLink}$3`);
-            const newContentBase64 = encodeBase64(newContent);
-            
-            const putBody = {
-                message: `Update ofertaBlack to ${novoLink}`,
-                content: newContentBase64,
-                sha: fileSha,
-                branch: branch
-            };
-
             const resPut = await fetch(url, {
                 method: 'PUT',
                 headers: getApiHeaders(),
-                body: JSON.stringify(putBody)
+                body: JSON.stringify({ message: `Update ofertaBlack to ${novoLink}`, content: encodeBase64(newContent), sha: fileSha, branch })
             });
-
             if (!resPut.ok) {
-                const errData = await resPut.json().catch(()=>({}));
+                const errData = await resPut.json().catch(() => ({}));
                 throw new Error(errData.message || `Erro HTTP: ${resPut.status} ao salvar.`);
             }
-
             document.getElementById('currentLinkValue').textContent = novoLink;
             document.getElementById('newMobileLink').value = '';
-            
             showMessage('mobile-msg', 'Atualizado com sucesso!', 'success');
-            updateDeployStatus('Deploy iniciado! Aguarde ~30s para refletir online.');
-            
+            updateStatus('deployStatus', 'Deploy iniciado! Aguarde ~30s para refletir online.');
         } catch (error) {
             console.error(error);
             showMessage('mobile-msg', error.message, 'error');
-            updateDeployStatus('Falha na atualização.', true);
+            updateStatus('deployStatus', 'Falha na atualização.', true);
         } finally {
             btn.disabled = false;
         }
@@ -608,7 +580,7 @@
     function generateScript() {
         const vercelUrl = (localStorage.getItem('vercel_url') || '').replace(/\/$/, '');
         const ghPath    = (localStorage.getItem('gh_path') || 'api/filtrar.mjs').replace(/\.mjs$/, '');
-        const endpoint  = vercelUrl + '/' + ghPath;
+        const endpoint  = vercelUrl.replace(/\/$/, '') + '/' + ghPath.replace(/^\//, '');
 
         if (!vercelUrl) {
             document.getElementById('scriptOutput').textContent = '// Preencha e salve a URL da Vercel e o Caminho na aba "Configuração".';
@@ -621,7 +593,7 @@
 (function() {
   const endpoint = "${endpoint}";
   const whiteUrl = "${whiteUrl}";
-  
+
   fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -636,9 +608,7 @@
   .then(data => {
     if (data.action === 'redirect' && data.url) {
       let url = data.url;
-      if (!/^https?:\\/\\//i.test(url)) {
-        url = 'https://' + url;
-      }
+      if (!/^https?:\\/\\//i.test(url)) url = 'https://' + url;
       window.location.href = url;
     } else if (whiteUrl) {
       window.location.href = whiteUrl;
@@ -654,24 +624,116 @@
     function copyScript() {
         const code = document.getElementById('scriptOutput').textContent;
         if (code.includes('// Preencha e salve')) return;
-
         navigator.clipboard.writeText(code).then(() => {
             showMessage('script-msg', 'Script copiado!', 'success');
             setTimeout(() => hideAllMessages(), 3000);
-        }).catch(err => {
-            console.error('Falha ao copiar:', err);
+        }).catch(() => {
             showMessage('script-msg', 'Erro ao copiar.', 'error');
         });
     }
 
     function checkUrlProtocol() {
         const val = document.getElementById('newMobileLink').value.trim();
-        const warning = document.getElementById('url-warning');
-        if (val.length > 0 && !/^https?:\/\//i.test(val)) {
-            warning.style.display = 'block';
-        } else {
-            warning.style.display = 'none';
+        document.getElementById('url-warning').style.display = (val.length > 0 && !/^https?:\/\//i.test(val)) ? 'block' : 'none';
+    }
+
+    // ==================== LOGS ====================
+
+    function formatDateTime(iso) {
+        if (!iso) return '—';
+        try {
+            return new Date(iso).toLocaleString('pt-BR', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        } catch { return iso; }
+    }
+
+    function deviceIcon(dv) {
+        return dv === 'mobile' ? '📱 Mobile' : '🖥️ Desktop';
+    }
+
+    function actionBadge(ac) {
+        if (ac === 'approved') return '<span class="badge badge-approved">approved</span>';
+        return '<span class="badge badge-blocked">blocked</span>';
+    }
+
+    async function loadLogs() {
+        const btn = document.getElementById('btnRefresh');
+        const tbody = document.getElementById('logsTableBody');
+        const limit = parseInt(document.getElementById('logsLimit').value, 10);
+
+        const redisUrl   = localStorage.getItem('upstash_url');
+        const redisToken = localStorage.getItem('upstash_token');
+
+        if (!redisUrl || !redisToken) {
+            showMessage('logs-msg', 'Configure a URL e o Token do Upstash na aba Configuração.', 'error');
+            return;
         }
+
+        btn.disabled = true;
+        btn.textContent = '⏳ Carregando...';
+        updateStatus('logsStatus', '');
+        hideAllMessages();
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Carregando...</td></tr>';
+
+        try {
+            const res = await fetch(`${redisUrl}/lrange/cloaker_logs/0/${limit - 1}`, {
+                headers: { Authorization: `Bearer ${redisToken}` }
+            });
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`Upstash retornou ${res.status}: ${text.slice(0, 100)}`);
+            }
+
+            const data = await res.json();
+            const entries = Array.isArray(data.result) ? data.result : [];
+
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum log encontrado.</td></tr>';
+                updateStatus('logsStatus', '0 registros encontrados.');
+                return;
+            }
+
+            const rows = entries.map(raw => {
+                let log;
+                try { log = JSON.parse(raw); } catch { return ''; }
+
+                const dest = log.dst
+                    ? `<div class="dest-url"><a href="${escHtml(log.dst)}" target="_blank" title="${escHtml(log.dst)}">${escHtml(log.dst)}</a></div>`
+                    : '<span style="color:var(--text-secondary)">—</span>';
+
+                return `<tr>
+                    <td style="white-space:nowrap">${escHtml(formatDateTime(log.t))}</td>
+                    <td>${escHtml(deviceIcon(log.dv))}</td>
+                    <td style="font-family:monospace;font-size:0.82rem">${escHtml(log.ip || '—')}</td>
+                    <td>${actionBadge(log.ac)}</td>
+                    <td>${escHtml(log.rs || '—')}</td>
+                    <td>${dest}</td>
+                </tr>`;
+            }).filter(Boolean).join('');
+
+            tbody.innerHTML = rows || '<tr class="empty-row"><td colspan="6">Nenhum log válido encontrado.</td></tr>';
+            updateStatus('logsStatus', `${entries.length} registro(s) carregado(s).`);
+
+        } catch (error) {
+            console.error(error);
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Erro ao carregar logs.</td></tr>';
+            showMessage('logs-msg', error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔄 Atualizar';
+        }
+    }
+
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 </script>
 
