@@ -377,6 +377,74 @@
             color: var(--text-secondary);
             font-size: 0.82rem;
         }
+
+        /* ── Overview / Stats ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+        .stat-card {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+        }
+        .stat-card-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+        .stat-card-value {
+            font-size: 2.1rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+        .stat-card-sub { font-size: 0.78rem; color: var(--text-secondary); }
+        .stat-card.green { border-color: rgba(16,185,129,0.35); background: rgba(16,185,129,0.04); }
+        .stat-card.green .stat-card-value { color: #34d399; }
+        .stat-card.red   { border-color: rgba(239,68,68,0.35);  background: rgba(239,68,68,0.04); }
+        .stat-card.red   .stat-card-value { color: #f87171; }
+        .stat-card.blue  { border-color: rgba(59,130,246,0.35); background: rgba(59,130,246,0.04); }
+        .stat-card.blue  .stat-card-value { color: #60a5fa; }
+        .stat-section-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            margin: 1.5rem 0 0.9rem;
+        }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .bar-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.55rem; }
+        .bar-label {
+            flex: 0 0 195px;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .bar-track {
+            flex: 1;
+            height: 7px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .bar-fill { height: 100%; border-radius: 99px; transition: width 0.45s ease; }
+        .bar-count {
+            flex: 0 0 30px;
+            text-align: right;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
     </style>
 </head>
 <body>
@@ -385,16 +453,60 @@
     <aside class="sidebar">
         <div class="sidebar-title">Dashboard</div>
         <nav>
-            <button class="nav-item active" onclick="switchTab('config')">Configuração</button>
-            <button class="nav-item" onclick="switchTab('mobile')">Link Mobile</button>
-            <button class="nav-item" onclick="switchTab('script')">Gerar Script</button>
-            <button class="nav-item" onclick="switchTab('logs')">Logs</button>
+            <button class="nav-item active" onclick="switchTab('overview')">📈 Overview</button>
+            <button class="nav-item" onclick="switchTab('config')">⚙️ Configuração</button>
+            <button class="nav-item" onclick="switchTab('mobile')">📱 Link Mobile</button>
+            <button class="nav-item" onclick="switchTab('script')">📋 Gerar Script</button>
+            <button class="nav-item" onclick="switchTab('logs')">📊 Logs</button>
         </nav>
     </aside>
 
     <main class="main-content">
+        <!-- TAB OVERVIEW -->
+        <div id="tab-overview" class="tab-content active">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
+                <h2 style="margin-bottom:0">Overview</h2>
+                <button type="button" class="btn btn-outline" onclick="loadOverview()" id="btnRefreshOverview" style="font-size:0.85rem;padding:0.6rem 1.2rem;">↻ Atualizar</button>
+            </div>
+            <div id="overview-msg" class="alert"></div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-label">Total de visitas</div>
+                    <div class="stat-card-value" id="ov-total">—</div>
+                    <div class="stat-card-sub">Últimos 500 registros</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-card-label">Taxa de aprovação</div>
+                    <div class="stat-card-value" id="ov-rate">—</div>
+                    <div class="stat-card-sub" id="ov-rate-sub">—</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-card-label">Aprovados</div>
+                    <div class="stat-card-value" id="ov-approved">—</div>
+                    <div class="stat-card-sub">Redirecionados para oferta</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-card-label">Bloqueados</div>
+                    <div class="stat-card-value" id="ov-blocked">—</div>
+                    <div class="stat-card-sub">Bots, desktop, idioma</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div>
+                    <div class="stat-section-title">Motivos de bloqueio</div>
+                    <div id="ov-reasons"><p style="color:var(--text-secondary);font-size:0.875rem">Clique em Atualizar.</p></div>
+                </div>
+                <div>
+                    <div class="stat-section-title">Dispositivos</div>
+                    <div id="ov-devices"><p style="color:var(--text-secondary);font-size:0.875rem">Clique em Atualizar.</p></div>
+                </div>
+            </div>
+        </div>
+
         <!-- TAB CONFIGURAÇÃO -->
-        <div id="tab-config" class="tab-content active">
+        <div id="tab-config" class="tab-content">
             <h2>Configurações da API</h2>
             <div id="config-msg" class="alert"></div>
             
@@ -640,6 +752,92 @@
     }
     // ---- fim Logs ----
 
+    // ==================== OVERVIEW ====================
+    async function loadOverview() {
+        const btn = document.getElementById('btnRefreshOverview');
+        if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
+        hideAllMessages();
+        try {
+            const { url, token } = getUpstashCreds();
+            const res = await fetch(`${url}/lrange/cloaker_logs/0/499`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error(`Upstash retornou ${res.status}`);
+            const data = await res.json();
+
+            const logs = (data.result || []).map(entry => {
+                try {
+                    const p = JSON.parse(entry);
+                    const obj = typeof p === 'string' ? JSON.parse(p) : p;
+                    if (!obj || typeof obj !== 'object') return null;
+                    const ac_raw = obj.ac || obj.action || '';
+                    return {
+                        ac: (ac_raw === 'approved' || ac_raw === 'redirect') ? 'approved' : 'blocked',
+                        dv: obj.dv || obj.device || 'desktop',
+                        rs: obj.rs || obj.reason || 'Desconhecido',
+                    };
+                } catch { return null; }
+            }).filter(Boolean);
+
+            const total    = logs.length;
+            const approved = logs.filter(l => l.ac === 'approved').length;
+            const blocked  = total - approved;
+            const rate     = total > 0 ? Math.round(approved / total * 100) : 0;
+
+            document.getElementById('ov-total').textContent    = total;
+            document.getElementById('ov-approved').textContent = approved;
+            document.getElementById('ov-blocked').textContent  = blocked;
+            document.getElementById('ov-rate').textContent     = rate + '%';
+            document.getElementById('ov-rate-sub').textContent = `${approved} aprovado(s) de ${total}`;
+
+            // Motivos de bloqueio
+            const reasonCount = {};
+            logs.filter(l => l.ac !== 'approved').forEach(l => {
+                reasonCount[l.rs] = (reasonCount[l.rs] || 0) + 1;
+            });
+            const reasonsEl = document.getElementById('ov-reasons');
+            if (blocked === 0) {
+                reasonsEl.innerHTML = '<p style="color:var(--text-secondary);font-size:0.875rem">Nenhum bloqueio nos registros.</p>';
+            } else {
+                const entries = Object.entries(reasonCount).sort((a, b) => b[1] - a[1]);
+                const maxR = entries[0][1];
+                reasonsEl.innerHTML = entries.map(([label, count]) => `
+                    <div class="bar-row">
+                        <div class="bar-label" title="${escHtml(label)}">${escHtml(label)}</div>
+                        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/maxR*100)}%;background:#f87171;opacity:0.8;"></div></div>
+                        <div class="bar-count">${count}</div>
+                    </div>`).join('');
+            }
+
+            // Dispositivos
+            const mobile  = logs.filter(l => l.dv === 'mobile').length;
+            const desktop = total - mobile;
+            const maxD    = Math.max(mobile, desktop, 1);
+            document.getElementById('ov-devices').innerHTML = `
+                <div class="bar-row">
+                    <div class="bar-label">📱 Mobile</div>
+                    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(mobile/maxD*100)}%;background:#34d399;opacity:0.85;"></div></div>
+                    <div class="bar-count">${mobile}</div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label">🖥️ Desktop / Bot</div>
+                    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(desktop/maxD*100)}%;background:#f87171;opacity:0.75;"></div></div>
+                    <div class="bar-count">${desktop}</div>
+                </div>`;
+
+        } catch (e) {
+            const el = document.getElementById('overview-msg');
+            if (el) showMessage('overview-msg', e.message, 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '↻ Atualizar'; }
+        }
+    }
+
+    function escHtml(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    // ==================== fim Overview ====================
+
     let fileSha = null;
     let fileContentDecoded = null;
 
@@ -649,6 +847,10 @@
         document.getElementById('gh-branch').value = localStorage.getItem('gh_branch') || 'main';
         document.getElementById('gh-path').value   = localStorage.getItem('gh_path')   || 'api/filtrar.mjs';
         document.getElementById('vercel-url').value= localStorage.getItem('vercel_url')|| '';
+        // Carrega overview automaticamente se credenciais já estiverem salvas
+        if (localStorage.getItem('upstash_url') && localStorage.getItem('upstash_token')) {
+            loadOverview();
+        }
     });
 
     function switchTab(tabId) {
@@ -660,9 +862,8 @@
         
         hideAllMessages();
 
-        if (tabId === 'script') {
-            generateScript();
-        }
+        if (tabId === 'script')   generateScript();
+        if (tabId === 'overview') loadOverview();
     }
 
     function showMessage(id, message, type) {
