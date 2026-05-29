@@ -62,7 +62,9 @@ Cada entrada é JSON com campos curtos:
   "ac": "approved",               // "approved" ou "blocked"
   "rs": "Visitante aprovado",    // motivo (texto)
   "dst": "https://oferta.com",    // destino final (vazio se bloqueado)
-  "ua": "Mozilla/5.0..."          // User-Agent completo
+  "ua": "Mozilla/5.0...",         // User-Agent completo
+  "cid": "camp_1780...",          // ID da campanha (filtro nos Logs)
+  "plt": "facebook"               // plataforma da campanha
 }
 ```
 
@@ -86,38 +88,52 @@ Cada entrada é JSON com campos curtos:
 
 ## Sistema de detecção (`meu-cloaker/api/filtrar.mjs`)
 
-A API recebe POST com `{userAgent, language, screenWidth, referrer}` e responde com `{action, url/reason}`.
+A API recebe POST com payload disfarçado de analytics `{e:"pv", c:campaignId, w:screenWidth, l:language, r:referrer}` (UA vem do header). Responde **sempre** com forma neutra: `{ok:true}` (bloqueado/desconhecido) ou `{ok:true, go:blackUrl}` (aprovado). Aceita também nomes antigos (`userAgent`, `campaignId`, `blackUrl`...) para compat.
 
-### 3 Camadas de bloqueio
+### 🕵️ Modo furtivo (anti-detecção) — CRÍTICO
 
-| Camada | O que bloqueia | Campos no log |
+Plataformas (Meta/Google/TikTok) detectam cloakers comparando o que o bot vê vs. o usuário. Regras invioláveis:
+
+- **Zero vazamento:** o motivo do bloqueio (`rs`) vai **só pro log do Redis**, NUNCA na resposta HTTP. Bot e visitante recebem resposta idêntica (`{ok:true}`).
+- **Oferta vive no servidor:** a black URL **nunca** vai no payload do cliente. Fica no Redis (`campaign:<id>` → `{blackUrl, platform, whiteUrl}`); o servidor resolve pelo `c` (campaignId) e só devolve `go` a quem é aprovado. Bot nunca vê a oferta.
+- **Redirect ofuscado:** o script usa `window["loc"+"ation"].replace(g)`, não `window.location.href = url` literal.
+- **whiteUrl vazio = stealth máximo:** bot bloqueado fica na página de origem (zero navegação). Só redireciona pro white se whiteUrl for definido.
+
+### Camadas de bloqueio
+
+| Camada | O que bloqueia | Exemplo `rs` (log) |
 |---|---|---|
-| **1: UA/Device/Idioma** | Bots (googlebot, puppeteer, playwright, etc.); Desktop se `apenasMobile: true`; idioma ≠ PT | `rs`: "Bot detectado por UA", "Dispositivo desktop bloqueado", "Idioma incompatível" |
-| **1b: screenWidth** | UA mobile + tela ≥ 1200px (bot em servidor) | `rs`: "Bot: UA mobile com tela 1920px" |
-| **2: IP** | Google IPs, Datacenters (AWS, Azure, etc.) | `rs`: "IP pertence ao Google", "IP de Datacenter detectado" |
-| **3: Headers** | Chrome sem `Sec-Ch-Ua` (headless/Puppeteer/Playwright) | `rs`: "Bot: Chrome sem headers de navegador real" |
+| **1: UA/Device/Idioma** | Bots base; Desktop se `apenasMobile`; idioma ≠ PT | "Bot detectado por UA", "Dispositivo desktop bloqueado", "Idioma incompatível" |
+| **1b: screenWidth** | UA mobile + tela ≥ 1200px | "Bot: UA mobile com tela 1920px" |
+| **1c: Plataforma** | Bots/IPs específicos da `platform` da campanha (Facebook/Google/TikTok) | "Bot facebook detectado por UA", "IP de verificação google detectado" |
+| **2: IP (prefixos)** | Google IPs, Datacenters fixos | "IP pertence ao Google", "IP de Datacenter detectado" |
+| **2b: IP intel (opcional)** | hosting/proxy/VPN via ip-api em tempo real. Liga com env `IP_INTEL=1` (grátis) ou `IP_INTEL_KEY=...` (pago) | "IP de proxy/VPN detectado", "IP de hosting/datacenter detectado" |
+| **3: Headers** | Chrome sem `Sec-Ch-Ua` (headless) | "Bot: Chrome sem headers de navegador real" |
 
-**Bots detectados por UA:** googlebot, adsbot, crawler, headless, puppeteer, selenium, phantomjs, playwright, cypress, webdriver, curl, wget, facebookexternalhit, whatsapp, applebot, dalvik, okhttp, java/, etc.
+**Bots base (UA):** googlebot, adsbot, puppeteer, playwright, selenium, webdriver, curl, wget, facebookexternalhit, facebookbot, meta-externalagent, tiktokspider, bytespider, bytedance, whatsapp, applebot, dalvik, okhttp, java/, etc.
+**Bots por plataforma:** facebook (instagram, fbav/, google-inspectiontool...), google (storebot-google, googleother, yandex...), tiktok (tiktok/, musical_ly, baiduspider...).
 
 ### Script de integração (cloaking)
 
-Injetado no site de origem, faz POST para endpoint, recebe `{action, url}`:
-- `action: 'redirect'` → redireciona para `url` (ofertaBlack) — mobile aprovado
-- `action: 'allow_white'` → redireciona para whiteUrl opcional ou fica na página — bloqueado
+Gerado **por campanha** (na aba Nova Campanha / botão "Ver Script"). Faz POST com payload de analytics, recebe `{ok, go?}`:
+- `go` presente → redireciona (visitante aprovado)
+- só `{ok:true}` → fica na origem ou vai pro whiteUrl se definido (bloqueado — sem revelar)
 
 ---
 
 ## Fluxo de dados
 
 ```
-Site de origem (injetado com script)
-  ↓ POST {userAgent, language, screenWidth, referrer}
+Dashboard → salva campanha → Redis SET campaign:<id> {blackUrl, platform, whiteUrl}
+Site de origem (script injetado por campanha)
+  ↓ POST {e:"pv", c:campaignId, w, l, r}   (SEM a oferta)
 Vercel API (filtrar.mjs)
-  ↓ Lê 3 camadas de detecção, grava log no Redis, responde
+  ↓ GET campaign:<id> no Redis → resolve blackUrl/platform
+  ↓ Camadas 1→3, grava log (com cid/plt), responde {ok} ou {ok,go}
 Redis Upstash
-  ↓ chave: cloaker_logs (LPUSH, LRANGE, DEL)
+  ↓ cloaker_logs (LPUSH/LRANGE/DEL) + campaign:<id> (SET/GET/DEL)
 Dashboard
-  ↓ Lê logs, renderiza Logs + Overview
+  ↓ Home (cards por campanha), Logs (filtro data/campanha/ação)
 ```
 
 ---

