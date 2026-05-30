@@ -22,6 +22,7 @@ Painel de controle local (HTML puro, zero-dependência) para gerenciar o sistema
 | `meu-cloaker` | `main` | API Vercel (`api/filtrar.mjs`) — lógica de detecção |
 | `cloak` | `main` | White page React/Vite (`burgzdelivery.vercel.app`) — tem script de cloaking no `<head>` |
 
+**URL do dashboard:** `https://dashboard-cloaker.vercel.app`  
 **URL da API ao vivo:** `https://meu-cloaker.vercel.app/api/v` (endpoint neutro)  
 **URL da white page:** `https://burgzdelivery.vercel.app`
 
