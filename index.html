@@ -271,6 +271,7 @@
         .platform-badge.facebook { background: rgba(24,119,242,0.15); color: #60a5fa; border: 1px solid rgba(24,119,242,0.3); }
         .platform-badge.google   { background: rgba(234,67,53,0.15);  color: #f87171; border: 1px solid rgba(234,67,53,0.3); }
         .platform-badge.tiktok   { background: rgba(255,0,80,0.12);   color: #fb7185; border: 1px solid rgba(255,0,80,0.3); }
+        .platform-badge.kwai     { background: rgba(255,165,0,0.12);  color: #fbbf24; border: 1px solid rgba(255,165,0,0.3); }
 
         .campaign-card-menu { display: flex; gap: 0.4rem; flex-shrink: 0; }
 
@@ -479,6 +480,10 @@
                         <input type="radio" name="platform" value="tiktok">
                         <span>🎵 TikTok</span>
                     </label>
+                    <label class="platform-option" onclick="selectPlatform('kwai')">
+                        <input type="radio" name="platform" value="kwai">
+                        <span>🟠 Kwai</span>
+                    </label>
                 </div>
             </div>
 
@@ -574,13 +579,14 @@
                             <th>Campanha</th>
                             <th>Dispositivo</th>
                             <th>IP</th>
+                            <th>País</th>
                             <th>Ação</th>
                             <th>Motivo</th>
                             <th>Destino</th>
                         </tr>
                     </thead>
                     <tbody id="logs-tbody">
-                        <tr><td colspan="7" class="logs-empty">Clique em "Atualizar" para carregar.</td></tr>
+                        <tr><td colspan="8" class="logs-empty">Clique em "Atualizar" para carregar.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -732,7 +738,7 @@ function genId() {
     return 'camp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 }
 function platformLabel(p) {
-    return { facebook: '📘 Facebook', google: '🔍 Google', tiktok: '🎵 TikTok' }[p] || p;
+    return { facebook: '📘 Facebook', google: '🔍 Google', tiktok: '🎵 TikTok', kwai: '🟠 Kwai' }[p] || p;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1065,7 +1071,7 @@ function normLog(log) {
     const ac  = (acr === 'approved' || acr === 'redirect') ? 'approved' : 'blocked';
     const rs  = log.rs || log.reason     || '—';
     const dst = log.dst || log.destination || '';
-    return { ts, dv, ac, rs, dst, cid: log.cid || '', plt: log.plt || '', ip: log.ip || '', ua: log.ua || '' };
+    return { ts, dv, ac, rs, dst, cid: log.cid || '', plt: log.plt || '', ip: log.ip || '', ua: log.ua || '', co: log.co || '' };
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1122,7 +1128,7 @@ function renderLogs(logs) {
     const campMap = Object.fromEntries(getCampaigns().map(c => [c.id, c.name]));
 
     if (!logs.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="logs-empty">Nenhum log encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="logs-empty">Nenhum log encontrado.</td></tr>';
         return;
     }
     tbody.innerHTML = logs.map(l => {
@@ -1137,11 +1143,13 @@ function renderLogs(logs) {
         const camp = l.cid && campMap[l.cid]
             ? `<span style="font-size:0.78rem;color:var(--text-secondary)">${escHtml(campMap[l.cid])}</span>`
             : '<span style="color:var(--text-secondary);font-size:0.78rem">—</span>';
+        const countryFlag = l.co ? `<span title="${escHtml(l.co)}" style="font-size:0.78rem;font-weight:600;color:var(--text-secondary)">${escHtml(l.co)}</span>` : '<span style="color:var(--text-secondary)">—</span>';
         return `<tr>
             <td>${dt}</td>
             <td>${camp}</td>
             <td>${dv}</td>
             <td>${escHtml(l.ip)}</td>
+            <td>${countryFlag}</td>
             <td>${badge}</td>
             <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${escHtml(l.rs)}</td>
             <td>${dest}</td>
