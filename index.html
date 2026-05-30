@@ -492,6 +492,27 @@
                 <input type="url" id="campaign-white-input" placeholder="https://site-seguro.com">
             </div>
 
+            <!-- Anticlone -->
+            <div style="background:rgba(0,0,0,0.15);border:1px solid var(--border-color);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem;">
+                <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:1rem;">🔒 Anticlone</div>
+                <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;margin-bottom:0.6rem;">
+                    <input type="checkbox" id="campaign-anticlone" onchange="toggleBurnOption()" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+                    <div>
+                        <div style="font-size:0.9rem;font-weight:500;">Exigir clique direto no anúncio</div>
+                        <div style="color:var(--text-secondary);font-size:0.8rem;margin-top:0.25rem;">Bloqueia quem acessar sem ter clicado no anúncio original (link copiado, compartilhado, digitado, etc.)</div>
+                    </div>
+                </label>
+                <div id="burn-token-option" style="display:none;margin-top:0.75rem;padding-left:1.75rem;border-left:2px solid var(--border-color);">
+                    <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;">
+                        <input type="checkbox" id="campaign-burn-token" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+                        <div>
+                            <div style="font-size:0.9rem;font-weight:500;">🔥 Queimar token (uso único por clique)</div>
+                            <div style="color:var(--text-secondary);font-size:0.8rem;margin-top:0.25rem;">Cada clique gera um token único válido por 48h. Quem compartilhar o link após clicar é bloqueado. Máxima proteção anti-clone.</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
                 <button class="btn" onclick="saveCampaign()">Salvar Campanha</button>
                 <button class="btn btn-outline" onclick="switchTab('home')">Cancelar</button>
@@ -768,11 +789,15 @@ function renderCard(camp, stats) {
             <div class="mini-stat red"><div class="mini-stat-val">${stats.blocked}</div><div class="mini-stat-lbl">Bloqueados</div></div>
           </div>`;
 
+    const anticloneBadge = camp.anticlone
+        ? `<span style="display:inline-flex;align-items:center;gap:0.2rem;padding:0.18rem 0.5rem;border-radius:999px;font-size:0.68rem;font-weight:600;background:rgba(234,179,8,0.12);color:#fbbf24;border:1px solid rgba(234,179,8,0.25);margin-left:0.35rem;">${camp.burnToken ? '🔥' : '🔒'} anticlone</span>`
+        : '';
+
     return `<div class="campaign-card">
         <div class="campaign-card-header">
             <div style="min-width:0;">
                 <div class="campaign-name">${escHtml(camp.name)}</div>
-                <span class="platform-badge ${escHtml(camp.platform)}">${platformLabel(camp.platform)}</span>
+                <span class="platform-badge ${escHtml(camp.platform)}">${platformLabel(camp.platform)}</span>${anticloneBadge}
             </div>
             <div class="campaign-card-menu">
                 <button class="btn-icon" onclick="editCampaign('${escHtml(camp.id)}')" title="Editar">✏️</button>
@@ -796,7 +821,13 @@ async function deleteCampaign(id) {
 // A URL da oferta NUNCA vai no payload do script — o servidor a busca aqui.
 async function redisSetCampaign(camp) {
     const { url, token } = getUpstashCreds();
-    const value = JSON.stringify({ blackUrl: camp.ofertaBlack, platform: camp.platform, whiteUrl: camp.whiteUrl || '' });
+    const value = JSON.stringify({
+        blackUrl:  camp.ofertaBlack,
+        platform:  camp.platform,
+        whiteUrl:  camp.whiteUrl  || '',
+        anticlone: !!camp.anticlone,
+        burnToken: !!camp.burnToken,
+    });
     const res = await fetch(`${url}/set/${encodeURIComponent('campaign:' + camp.id)}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -838,9 +869,19 @@ function editCampaign(id) {
     document.getElementById('campaign-black-input').value = camp.ofertaBlack || '';
     document.getElementById('campaign-white-input').value = camp.whiteUrl    || '';
     selectPlatform(camp.platform);
+    document.getElementById('campaign-anticlone').checked  = !!camp.anticlone;
+    document.getElementById('campaign-burn-token').checked = !!camp.burnToken;
+    toggleBurnOption();
     refreshCampaignScript(camp);
     document.getElementById('campaign-script-section').style.display = 'block';
     hideAllMessages();
+}
+
+function toggleBurnOption() {
+    const enabled = document.getElementById('campaign-anticlone').checked;
+    const el = document.getElementById('burn-token-option');
+    el.style.display = enabled ? 'block' : 'none';
+    if (!enabled) document.getElementById('campaign-burn-token').checked = false;
 }
 
 function selectPlatform(value) {
@@ -858,6 +899,8 @@ async function saveCampaign() {
     const ofertaBlack = document.getElementById('campaign-black-input').value.trim();
     const whiteUrl    = document.getElementById('campaign-white-input').value.trim();
     const platform    = document.querySelector('input[name="platform"]:checked')?.value || '';
+    const anticlone   = document.getElementById('campaign-anticlone').checked;
+    const burnToken   = anticlone && document.getElementById('campaign-burn-token').checked;
 
     if (!name)        { showMessage('campaign-msg', 'Digite o nome da campanha.', 'error');    return; }
     if (!platform)    { showMessage('campaign-msg', 'Selecione a plataforma.',    'error');    return; }
@@ -867,10 +910,10 @@ async function saveCampaign() {
     let camp;
     if (id) {
         const idx = campaigns.findIndex(c => c.id === id);
-        if (idx >= 0) { campaigns[idx] = { ...campaigns[idx], name, platform, ofertaBlack, whiteUrl }; camp = campaigns[idx]; }
+        if (idx >= 0) { campaigns[idx] = { ...campaigns[idx], name, platform, ofertaBlack, whiteUrl, anticlone, burnToken }; camp = campaigns[idx]; }
     }
     if (!camp) {
-        camp = { id: genId(), name, platform, ofertaBlack, whiteUrl, createdAt: new Date().toISOString() };
+        camp = { id: genId(), name, platform, ofertaBlack, whiteUrl, anticlone, burnToken, createdAt: new Date().toISOString() };
         campaigns.push(camp);
     }
     saveCampaigns(campaigns);
@@ -930,12 +973,15 @@ function buildScript(camp) {
   // Coleta fingerprint do dispositivo (parece analytics padrão)
   function _wgl(){try{var c=document.createElement('canvas'),g=c.getContext('webgl')||c.getContext('experimental-webgl');if(!g)return'';var x=g.getExtension('WEBGL_debug_renderer_info');return x?(g.getParameter(x.UNMASKED_RENDERER_WEBGL)||''):''}catch(e){return''}}
   var _n=navigator||{},_s=window.screen||{},_co=(_n.connection||{});
+  // Token de clique do anúncio (fbclid=Facebook, gclid=Google, ttclid=TikTok)
+  var _q=new URLSearchParams(location.search);
+  var _fbc=_q.get('fbclid')||_q.get('gclid')||_q.get('ttclid')||'';
 
   fetch("${ep}",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
-      e:"pv",c:"${cid}",
+      e:"pv",c:"${cid}",fbc:_fbc,
       w:_s.width,l:_n.language,r:document.referrer,
       dp:window.devicePixelRatio||1,
       mem:_n.deviceMemory||0,
