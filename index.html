@@ -654,8 +654,8 @@
             <h2>Configurações</h2>
             <div id="config-msg" class="alert"></div>
 
-            <!-- Proteção de Credenciais -->
-            <div class="config-section" style="border-color:rgba(59,130,246,0.3);">
+            <!-- Proteção de Credenciais (AES local) — oculta: credenciais agora ficam no servidor -->
+            <div class="config-section" style="border-color:rgba(59,130,246,0.3);display:none;">
                 <div class="config-section-title">🔐 Proteção de Credenciais (AES-256)</div>
                 <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:1rem;line-height:1.5;">
                     Senha usada para cifrar tokens e URLs no armazenamento local do navegador.<br>
@@ -702,31 +702,40 @@
                 </div>
             </div>
 
-            <!-- Vercel + GitHub -->
+            <!-- URL da API -->
             <form onsubmit="saveConfig(event)">
                 <div class="config-section">
-                    <div class="config-section-title">Vercel &amp; GitHub</div>
-                    <div class="form-group">
-                        <label>URL Base da Vercel</label>
+                    <div class="config-section-title">⚙️ API</div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>URL Base da API (Vercel)</label>
                         <input type="url" id="vercel-url" placeholder="https://meu-cloaker.vercel.app">
+                        <p style="color:var(--text-secondary);font-size:0.78rem;margin-top:0.4rem;">Só o endereço base. Pode deixar em branco para usar o padrão.</p>
                     </div>
+                </div>
+
+                <!-- GitHub do usuário (salvo na conta, no servidor) -->
+                <div class="config-section">
+                    <div class="config-section-title">🐙 Meu GitHub</div>
+                    <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:1.25rem;line-height:1.5;">
+                        Conecte o seu repositório. As configurações ficam salvas <strong style="color:var(--text-primary)">na sua conta</strong> (funcionam de qualquer dispositivo). O token é <strong style="color:var(--text-primary)">cifrado no servidor</strong> e nunca é exibido de volta — outro usuário não tem acesso ao seu.
+                    </p>
                     <div class="form-group">
                         <label>GitHub Personal Access Token</label>
-                        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label>Repositório</label>
-                        <input type="text" id="gh-repo" placeholder="usuario/repositorio">
+                        <input type="text" id="gh-repo" placeholder="seu-usuario/seu-repositorio">
                     </div>
                     <div class="form-group">
                         <label>Branch</label>
                         <input type="text" id="gh-branch" value="main">
                     </div>
                     <div class="form-group">
-                        <label>Caminho do arquivo</label>
-                        <input type="text" id="gh-path" value="api/filtrar.mjs">
+                        <label>Caminho do arquivo (ex.: index.html)</label>
+                        <input type="text" id="gh-path" placeholder="index.html">
                     </div>
-                    <button type="submit" class="btn">Salvar Configurações</button>
+                    <button type="submit" class="btn">Salvar na minha conta</button>
                 </div>
             </form>
         </div>
@@ -1360,35 +1369,45 @@ async function skipMasterPw() {
 
 async function loadAllConfig() {
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-    set('gh-token',   await getCred('gh_token')   || '');
-    set('gh-repo',    await getCred('gh_repo')    || '');
-    set('gh-branch',  await getCred('gh_branch')  || 'main');
-    set('gh-path',    await getCred('gh_path')    || 'api/filtrar.mjs');
     set('vercel-url', localStorage.getItem('vercel_url') || apiBase());
-    // Status da proteção AES (apenas para o token do GitHub)
-    const mpEl = document.getElementById('mp-status');
-    if (mpEl) mpEl.innerHTML = _getMasterPw()
-        ? '<span style="color:#34d399">✓ Proteção ativa nesta sessão</span>'
-        : (hasEncryptedCreds() ? '<span style="color:#eab308">⚠ Credenciais cifradas — ative a proteção</span>' : '<span style="color:#94a3b8">Sem proteção ativa</span>');
+    // Config do GitHub vem da conta (servidor). O token nunca volta — só hasToken.
+    try {
+        const j = await panelCall('getGitHub', {});
+        if (j && j.ok) {
+            const g = j.github || {};
+            set('gh-repo',   g.repo   || '');
+            set('gh-branch', g.branch || 'main');
+            set('gh-path',   g.path   || '');
+            const tk = document.getElementById('gh-token');
+            if (tk) {
+                tk.value = '';
+                tk.placeholder = g.hasToken
+                    ? '•••••••• (salvo — deixe em branco p/ manter)'
+                    : 'ghp_xxxxxxxxxxxxxxxxxxxx';
+            }
+        }
+    } catch {}
 }
 
 async function saveConfig(e) {
     e.preventDefault();
     const token     = document.getElementById('gh-token').value.trim();
     const repo      = document.getElementById('gh-repo').value.trim();
-    const branch    = document.getElementById('gh-branch').value.trim()  || 'main';
-    const path      = document.getElementById('gh-path').value.trim()    || 'api/filtrar.mjs';
+    const branch    = document.getElementById('gh-branch').value.trim() || 'main';
+    const path      = document.getElementById('gh-path').value.trim();
     const vercelUrl = normBase(document.getElementById('vercel-url').value);
-    // vercel_url é URL pública (não é segredo) — fica em texto puro p/ login funcionar antes da sessão
+    // vercel_url é URL pública (não é segredo) — texto puro p/ login funcionar antes da sessão
     if (vercelUrl) localStorage.setItem('vercel_url', vercelUrl);
-    // GitHub token é sensível → cifrado se a senha mestra estiver ativa
-    if (token) await setCred('gh_token', token);
-    await setCred('gh_repo',   repo);
-    await setCred('gh_branch', branch);
-    await setCred('gh_path',   path);
-    const enc = !!_getMasterPw();
-    showMessage('config-msg', enc ? '🔐 Configurações salvas com criptografia!' : 'Configurações salvas!','success');
-    setTimeout(() => hideAllMessages(), 3000);
+    // GitHub vai pro servidor, vinculado à conta. Token só é enviado se foi digitado.
+    try {
+        const payload = { github: { repo, branch, path } };
+        if (token) payload.github.token = token;
+        const j = await panelCall('saveGitHub', payload);
+        if (!j.ok) { showMessage('config-msg', j.error || 'Falha ao salvar.', 'error'); return; }
+        await loadAllConfig();
+        showMessage('config-msg', '✓ Salvo na sua conta!', 'success');
+        setTimeout(() => hideAllMessages(), 3000);
+    } catch (err) { showMessage('config-msg', err.message, 'error'); }
 }
 
 // ════════════════════════════════════════════════════════════
