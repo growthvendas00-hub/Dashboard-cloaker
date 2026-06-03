@@ -302,6 +302,42 @@
         .step-ttl  { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
         .step-sub  { font-size: 0.68rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.35; }
 
+        /* ── Passos verticais numerados (tutorial GitHub) ── */
+        .vsteps { list-style: none; counter-reset: v; margin: 0.5rem 0; padding: 0; }
+        .vsteps li {
+            counter-increment: v; position: relative;
+            padding: 0.35rem 0 0.55rem 2.5rem;
+            font-size: 0.86rem; color: var(--text-secondary); line-height: 1.55;
+        }
+        .vsteps li::before {
+            content: counter(v); position: absolute; left: 0; top: 0.2rem;
+            width: 1.7rem; height: 1.7rem; border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #a78bfa);
+            color: #fff; font-size: 0.78rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .vsteps li strong { color: var(--text-primary); }
+        .vsteps li .pin {
+            display: inline-block; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3);
+            color: #93c5fd; border-radius: 5px; padding: 0.02rem 0.4rem; font-size: 0.8rem; font-weight: 600;
+        }
+        /* Legenda campo-a-campo */
+        .legend { display: grid; gap: 0.5rem; margin: 0.4rem 0 0.2rem; }
+        .legend-row {
+            display: grid; grid-template-columns: 150px 1fr; gap: 0.6rem; align-items: start;
+            background: rgba(0,0,0,0.2); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 0.6rem 0.75rem;
+        }
+        @media (max-width: 600px) { .legend-row { grid-template-columns: 1fr; gap: 0.2rem; } }
+        .legend-key { font-size: 0.82rem; font-weight: 700; color: #f8fafc; }
+        .legend-val { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+        .legend-val code, .vsteps code {
+            background: rgba(0,0,0,0.4); padding: 0.05rem 0.38rem; border-radius: 5px;
+            font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.76rem; color: #93c5fd;
+        }
+        .field-hint { font-size: 0.76rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.45; }
+        .field-hint code { background: rgba(0,0,0,0.4); padding: 0.03rem 0.32rem; border-radius: 4px; color: #93c5fd; font-size: 0.73rem; }
+
         /* ── Demonstração animada (mini-vídeo em CSS, loop) ── */
         .demo-wrap { margin: 0.5rem 0 1.1rem; }
         .demo-cap-top { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
@@ -932,27 +968,52 @@
                     </div>
                 </div>
 
+                <!-- Tutorial: como conectar o GitHub -->
+                <details class="help-guide" open style="margin-bottom:1.25rem;">
+                    <summary>🐙 Como conectar seu GitHub — passo a passo</summary>
+
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-primary);margin:0.5rem 0 0.25rem;">Parte 1 — Gerar o seu token no GitHub</div>
+                    <ol class="vsteps">
+                        <li>Entre no <strong>github.com</strong>, clique na sua <strong>foto de perfil</strong> (canto superior direito) → <span class="pin">Settings</span>.</li>
+                        <li>No menu da esquerda, role até o final → <span class="pin">Developer settings</span>.</li>
+                        <li>Abra <span class="pin">Personal access tokens</span> → <span class="pin">Tokens (classic)</span> → <span class="pin">Generate new token (classic)</span>.</li>
+                        <li>Dê um nome (ex.: <code>cloaker</code>) e marque a permissão <strong>repo</strong> (controle dos seus repositórios).</li>
+                        <li>Clique em <strong>Generate token</strong> e <strong>copie o código</strong> que começa com <code>ghp_</code> — ⚠️ ele <strong>só aparece uma vez!</strong></li>
+                    </ol>
+
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-primary);margin:1rem 0 0.4rem;">Parte 2 — O que vai em cada campo aqui embaixo</div>
+                    <div class="legend">
+                        <div class="legend-row"><div class="legend-key">🔑 Token</div><div class="legend-val">Cole o <code>ghp_...</code> que você copiou no passo 5.</div></div>
+                        <div class="legend-row"><div class="legend-key">📦 Repositório</div><div class="legend-val">No formato <code>usuario/repositorio</code>. Ex.: <code>meu-usuario/meu-site</code> (é o que aparece na URL do seu repo no GitHub).</div></div>
+                        <div class="legend-row"><div class="legend-key">🌿 Branch</div><div class="legend-val">O ramo do repositório. Quase sempre <code>main</code> (alguns usam <code>master</code>).</div></div>
+                        <div class="legend-row"><div class="legend-key">📄 Caminho do arquivo</div><div class="legend-val">Onde fica o HTML do seu site dentro do repo. Ex.: <code>index.html</code> ou <code>public/index.html</code>.</div></div>
+                    </div>
+
+                    <div class="help-foot">🔒 Ao salvar, o token é <strong>cifrado no servidor</strong> e mostrado como <code>••••••</code> — nunca volta exposto. Pra trocar, digite um novo; pra manter, deixe em branco.</div>
+                </details>
+
                 <!-- GitHub do usuário (salvo na conta, no servidor) -->
                 <div class="config-section">
                     <div class="config-section-title">🐙 Meu GitHub</div>
-                    <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:1.25rem;line-height:1.5;">
-                        Conecte o seu repositório. As configurações ficam salvas <strong style="color:var(--text-primary)">na sua conta</strong> (funcionam de qualquer dispositivo). O token é <strong style="color:var(--text-primary)">cifrado no servidor</strong> e nunca é exibido de volta — outro usuário não tem acesso ao seu.
-                    </p>
                     <div class="form-group">
-                        <label>GitHub Personal Access Token</label>
+                        <label>🔑 GitHub Personal Access Token</label>
                         <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+                        <p class="field-hint">Crie em <code>github.com → Settings → Developer settings → Tokens (classic)</code>, com a permissão <code>repo</code>. Veja o passo a passo acima ☝️</p>
                     </div>
                     <div class="form-group">
-                        <label>Repositório</label>
+                        <label>📦 Repositório</label>
                         <input type="text" id="gh-repo" placeholder="seu-usuario/seu-repositorio">
+                        <p class="field-hint">Formato <code>usuario/repositorio</code>. Ex.: <code>meu-usuario/meu-site</code>.</p>
                     </div>
                     <div class="form-group">
-                        <label>Branch</label>
+                        <label>🌿 Branch</label>
                         <input type="text" id="gh-branch" value="main">
+                        <p class="field-hint">Geralmente <code>main</code>.</p>
                     </div>
                     <div class="form-group">
-                        <label>Caminho do arquivo (ex.: index.html)</label>
+                        <label>📄 Caminho do arquivo</label>
                         <input type="text" id="gh-path" placeholder="index.html">
+                        <p class="field-hint">O arquivo HTML do seu site no repo. Ex.: <code>index.html</code>.</p>
                     </div>
                     <button type="submit" class="btn">Salvar na minha conta</button>
                 </div>
