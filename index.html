@@ -234,6 +234,49 @@
         .empty-state h3 { font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.6rem; }
         .empty-state p  { font-size: 0.9rem; margin-bottom: 1.5rem; }
 
+        /* ── Guia de uso (Home) ── */
+        .help-guide {
+            background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(167,139,250,0.06));
+            border: 1px solid rgba(59,130,246,0.25);
+            border-radius: 12px;
+            padding: 0.5rem 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+        .help-guide > summary {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.75rem 0;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-primary);
+        }
+        .help-guide > summary::-webkit-details-marker { display: none; }
+        .help-guide > summary::after { content: '▾'; color: var(--text-secondary); transition: transform 0.2s; }
+        .help-guide[open] > summary::after { transform: rotate(180deg); }
+        .help-guide ol { margin: 0.25rem 0 1rem; padding-left: 1.3rem; }
+        .help-guide li { font-size: 0.88rem; line-height: 1.65; color: var(--text-secondary); margin-bottom: 0.55rem; }
+        .help-guide li strong { color: var(--text-primary); }
+        .help-guide code {
+            background: rgba(0,0,0,0.4);
+            padding: 0.08rem 0.4rem;
+            border-radius: 5px;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: 0.82rem;
+            color: #93c5fd;
+        }
+        .help-guide .help-foot {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 0.75rem 0;
+            margin-top: 0.25rem;
+        }
+        .help-badge-green { color: #34d399; font-weight: 600; }
+        .help-badge-red   { color: #f87171; font-weight: 600; }
+
         /* ── Campaign Grid ── */
         .campaigns-grid {
             display: grid;
@@ -504,6 +547,21 @@
                 <h2 style="margin-bottom:0">Campanhas</h2>
                 <button class="btn" onclick="newCampaign()">+ Nova Campanha</button>
             </div>
+
+            <!-- Guia passo a passo (para o usuário não ficar perdido) -->
+            <details id="help-guide" class="help-guide" open>
+                <summary>📖 Como usar o cloaker — passo a passo</summary>
+                <ol>
+                    <li><strong>Crie uma campanha:</strong> clique em <strong>"+ Nova Campanha"</strong>, dê um nome, escolha a <strong>plataforma</strong> (Facebook, Google, TikTok ou Kwai) e cole o <strong>link da sua oferta</strong> (a página que o cliente real deve ver).</li>
+                    <li><strong>URL White (opcional):</strong> uma página "limpa" pra mostrar aos bots/revisores. Pode deixar em branco.</li>
+                    <li><strong>Anticlone (opcional):</strong> marque <em>"Exigir clique direto no anúncio"</em> para bloquear quem não clicou no seu anúncio (link copiado/compartilhado).</li>
+                    <li><strong>Salve a campanha:</strong> o <strong>Script de Integração</strong> aparece automaticamente logo abaixo. Clique em <strong>📋 Copiar</strong>.</li>
+                    <li><strong>Cole o script no seu site:</strong> dentro do <code>&lt;head&gt;</code> da página de origem (onde cai o tráfego do anúncio). Publique o site. <strong>Pronto, o cloaker está ativo! ✅</strong></li>
+                    <li><strong>Acompanhe:</strong> na aba <strong>📊 Logs</strong> você vê em tempo real — <span class="help-badge-green">verde = cliente aprovado</span>, <span class="help-badge-red">vermelho = bot bloqueado</span>.</li>
+                </ol>
+                <div class="help-foot">🔒 Sua conta é isolada: você só vê as <strong>suas</strong> campanhas e logs. Configure o seu GitHub em <strong>⚙️ Configurações → Meu GitHub</strong> (opcional).</div>
+            </details>
+
             <div id="home-msg" class="alert"></div>
             <div id="campaigns-grid" class="campaigns-grid"></div>
         </div>
@@ -1492,6 +1550,12 @@ function enterApp() {
     document.getElementById('nav-users').style.display    = isAdmin ? 'block' : 'none';
     document.getElementById('users-section').style.display = isAdmin ? 'block' : 'none';
     activateTab('home');
+    // Guia de uso: lembra se o usuário recolheu (não força aberto toda vez)
+    const hg = document.getElementById('help-guide');
+    if (hg) {
+        hg.open = localStorage.getItem('_help_closed') !== '1';
+        hg.addEventListener('toggle', () => localStorage.setItem('_help_closed', hg.open ? '0' : '1'), { once: false });
+    }
     loadAllConfig();
     loadHome();
 }
