@@ -803,8 +803,13 @@ function hideAllMessages() {
 // ════════════════════════════════════════════════════════════
 let _me = null, _myRole = null;
 
+// Normaliza a URL base da API: remove caminho /api/... e barra final.
+// Aceita tanto "https://x.vercel.app" quanto "https://x.vercel.app/api/filtrar" (corta o sufixo).
+function normBase(u) {
+    return (u || '').trim().replace(/\/api\/.*$/i, '').replace(/\/+$/, '');
+}
 function apiBase() {
-    return (localStorage.getItem('vercel_url') || 'https://meu-cloaker.vercel.app').replace(/\/$/, '');
+    return normBase(localStorage.getItem('vercel_url')) || 'https://meu-cloaker.vercel.app';
 }
 function getSession()   { return localStorage.getItem('_sess') || ''; }
 function setSession(t)  { localStorage.setItem('_sess', t); }
@@ -1373,7 +1378,7 @@ async function saveConfig(e) {
     const repo      = document.getElementById('gh-repo').value.trim();
     const branch    = document.getElementById('gh-branch').value.trim()  || 'main';
     const path      = document.getElementById('gh-path').value.trim()    || 'api/filtrar.mjs';
-    const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
+    const vercelUrl = normBase(document.getElementById('vercel-url').value);
     // vercel_url é URL pública (não é segredo) — fica em texto puro p/ login funcionar antes da sessão
     if (vercelUrl) localStorage.setItem('vercel_url', vercelUrl);
     // GitHub token é sensível → cifrado se a senha mestra estiver ativa
@@ -1417,7 +1422,7 @@ async function doLogin() {
     const u = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value;
     const base = document.getElementById('login-apibase').value.trim();
-    if (base) localStorage.setItem('vercel_url', base.replace(/\/$/, ''));
+    if (base) localStorage.setItem('vercel_url', normBase(base));
     const errEl = document.getElementById('login-error');
     errEl.textContent = '';
     if (!u || !p) { errEl.textContent = 'Preencha usuário e senha.'; return; }
@@ -1437,7 +1442,7 @@ async function doSetup() {
     const u = document.getElementById('setup-user').value.trim();
     const p = document.getElementById('setup-pass').value;
     const base = document.getElementById('setup-apibase').value.trim();
-    if (base) localStorage.setItem('vercel_url', base.replace(/\/$/, ''));
+    if (base) localStorage.setItem('vercel_url', normBase(base));
     const errEl = document.getElementById('setup-error');
     errEl.textContent = '';
     if (!u || !p) { errEl.textContent = 'Preencha usuário e senha.'; return; }
