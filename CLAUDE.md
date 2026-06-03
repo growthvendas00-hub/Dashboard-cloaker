@@ -63,7 +63,7 @@ Três seções:
 | **Home** (padrão) | Cards de campanhas com stats ao vivo; botão Ver Script por campanha | `/api/panel` → Redis `campaign:<id>` + `cloaker_logs:<conta>` |
 | **Nova Campanha** | Formulário: nome, plataforma, blackUrl, whiteUrl, anticlone, burnToken | `/api/panel` action `saveCampaign` (escopado à conta) |
 | **Logs** | Tabela (data, IP, país, ação) + filtros + Limpar | `/api/panel` action `getLogs`/`clearLogs` |
-| **Configurações** | URL da API, GitHub token/repo/branch/path, proteção AES-256, **Usuários (admin)** | `localStorage` (vercel_url plano; GitHub cifrável) + `/api/panel` (contas) |
+| **Configurações** | URL da API (localStorage), **Meu GitHub** (por conta, via servidor), **Usuários (admin)** | `localStorage` (vercel_url) + `/api/panel` (GitHub `gh_cfg:<conta>` + contas) |
 
 > A aba só aparece **após o login**. O overlay de auth (`#auth-overlay`) cobre tudo até autenticar; o app (`#app-root`) só é exibido por `enterApp()`.
 
@@ -133,6 +133,7 @@ Endpoint **autenticado** que dá acesso a campanhas e logs com isolamento por co
 | `deleteCampaign` | sessão | Remove campanha (valida posse) |
 | `getLogs` | sessão | `LRANGE cloaker_logs:<conta>`. Admin também lê legado global. |
 | `clearLogs` | sessão | `DEL` da lista de logs da conta |
+| `getGitHub` / `saveGitHub` | sessão | Config GitHub **por conta** (`gh_cfg:<conta>`). Token cifrado AES-256-GCM em repouso; `getGitHub` retorna só `hasToken` (nunca o token). |
 | `listAccounts` / `createAccount` / `deleteAccount` | **admin** | Gestão de usuários |
 
 **Segredos:** `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `AUTH_SECRET` (opcional — cai no token do Upstash) — todas env vars na Vercel, nunca no cliente.
@@ -229,7 +230,7 @@ Dashboard (logado)
 - **Tudo fica em `index.html`** — sem arquivos `.js` ou `.css` separados
 - **CSS:** variáveis no `:root`; novos estilos sempre com prefixo de componente (`.stat-card`, `.bar-row`)
 - **Campos de log:** nomes curtos (`t, ip, dv, ac, rs, dst, ua, cid, plt, acc, co`) — não mudar, API depende disso
-- **Chaves Redis:** `cloaker_logs:<conta>` (logs por usuário), `campaign:<id>`, `acct_camps:<conta>` (SET), `cloaker_accounts` (HASH de contas), `cloak_tkn:*` (burn). Legado: `cloaker_logs` (global, lido pelo admin)
+- **Chaves Redis:** `cloaker_logs:<conta>` (logs por usuário), `campaign:<id>`, `acct_camps:<conta>` (SET), `cloaker_accounts` (HASH de contas), `gh_cfg:<conta>` (config GitHub, token cifrado), `cloak_tkn:*` (burn). Legado: `cloaker_logs` (global, lido pelo admin)
 - **`/api/panel`:** comando Redis via JSON array na raiz REST; pipeline em `POST /pipeline`
 - **Endpoint GitHub:** `https://api.github.com/repos/{repo}/contents/{path}?ref={branch}`
 - **Credenciais:** nunca hardcoded em arquivos — usar `setCred`/`getCred` com AES-GCM
