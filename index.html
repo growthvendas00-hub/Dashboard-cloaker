@@ -428,15 +428,72 @@
 </head>
 <body>
 
-<div class="container">
+<!-- ══════════════ OVERLAY DE AUTENTICAÇÃO ══════════════ -->
+<div id="auth-overlay" style="position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem;background:var(--bg-color);background-image:radial-gradient(at 0% 0%, rgba(59,130,246,0.15) 0px, transparent 50%),radial-gradient(at 100% 100%, rgba(16,185,129,0.15) 0px, transparent 50%);">
+    <div style="width:100%;max-width:400px;">
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-size:2.2rem;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Cloaker</div>
+            <div style="color:var(--text-secondary);font-size:0.88rem;margin-top:0.35rem;">Painel de controle</div>
+        </div>
+
+        <!-- Pane: carregando -->
+        <div id="auth-loading" style="text-align:center;color:var(--text-secondary);font-size:0.9rem;">Carregando…</div>
+
+        <!-- Pane: login -->
+        <div id="auth-login" style="display:none;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:16px;padding:2rem;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+            <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1.25rem;">Entrar na sua conta</h3>
+            <div class="form-group">
+                <label>Usuário</label>
+                <input type="text" id="login-user" autocomplete="username" placeholder="seu_usuario" onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="login-pass" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <details style="margin-bottom:1rem;">
+                <summary style="cursor:pointer;color:var(--text-secondary);font-size:0.8rem;">URL da API (avançado)</summary>
+                <input type="url" id="login-apibase" placeholder="https://meu-cloaker.vercel.app" style="margin-top:0.5rem;">
+            </details>
+            <div id="login-error" style="color:#f87171;font-size:0.83rem;margin-bottom:0.75rem;min-height:1.1rem;"></div>
+            <button class="btn" id="login-btn" style="width:100%;" onclick="doLogin()">Entrar</button>
+        </div>
+
+        <!-- Pane: setup (primeiro admin) -->
+        <div id="auth-setup" style="display:none;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:16px;padding:2rem;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+            <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:0.4rem;">Criar conta de administrador</h3>
+            <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:1.25rem;">Primeira vez aqui. Crie a conta dona do painel — só ela poderá criar outros usuários.</p>
+            <div class="form-group">
+                <label>Usuário (3-20 caracteres)</label>
+                <input type="text" id="setup-user" placeholder="admin" onkeydown="if(event.key==='Enter')doSetup()">
+            </div>
+            <div class="form-group">
+                <label>Senha (mín. 6 caracteres)</label>
+                <input type="password" id="setup-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSetup()">
+            </div>
+            <details style="margin-bottom:1rem;">
+                <summary style="cursor:pointer;color:var(--text-secondary);font-size:0.8rem;">URL da API (avançado)</summary>
+                <input type="url" id="setup-apibase" placeholder="https://meu-cloaker.vercel.app" style="margin-top:0.5rem;">
+            </details>
+            <div id="setup-error" style="color:#f87171;font-size:0.83rem;margin-bottom:0.75rem;min-height:1.1rem;"></div>
+            <button class="btn" id="setup-btn" style="width:100%;" onclick="doSetup()">Criar e entrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="app-root" style="display:none;">
     <aside class="sidebar">
         <div class="sidebar-title">Cloaker</div>
         <nav>
             <button class="nav-item active" data-tab="home" onclick="switchTab('home')">🏠 Home</button>
             <button class="nav-item" data-tab="campaign" onclick="newCampaign()">➕ Nova Campanha</button>
             <button class="nav-item" data-tab="logs" onclick="switchTab('logs')">📊 Logs</button>
+            <button class="nav-item" id="nav-users" style="display:none" onclick="switchTab('config');setTimeout(loadAccounts,60)">👥 Usuários</button>
             <button class="nav-item" data-tab="config" onclick="switchTab('config')">⚙️ Configurações</button>
         </nav>
+        <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border-color);">
+            <div id="sidebar-user" style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem;padding-left:0.5rem;word-break:break-all;"></div>
+            <button class="nav-item" onclick="logout()" style="color:#f87171;">⎋ Sair</button>
+        </div>
     </aside>
 
     <main class="main-content">
@@ -615,18 +672,34 @@
                 <div id="mp-status" style="margin-top:0.75rem;font-size:0.83rem;"><span style="color:#94a3b8">Sem proteção ativa</span></div>
             </div>
 
-            <!-- Upstash -->
-            <div class="config-section">
-                <div class="config-section-title">Upstash Redis — Logs</div>
-                <div class="form-group">
-                    <label>URL do Redis</label>
-                    <input type="url" id="upstash-url" placeholder="https://humane-ibex-137301.upstash.io">
+            <!-- Usuários (somente admin) -->
+            <div class="config-section" id="users-section" style="display:none;border-color:rgba(167,139,250,0.3);">
+                <div class="config-section-title">👥 Usuários do Painel</div>
+                <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:1.25rem;line-height:1.5;">
+                    Cada usuário só enxerga as próprias campanhas e logs. O token do Upstash fica no servidor — ninguém consegue ver os dados de outra conta, nem pelo navegador.
+                </p>
+                <div id="accounts-list" style="margin-bottom:1.25rem;"></div>
+                <div style="background:rgba(0,0,0,0.2);border:1px solid var(--border-color);border-radius:8px;padding:1rem;">
+                    <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.75rem;">+ Criar novo usuário</div>
+                    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:flex-end;">
+                        <div class="form-group" style="flex:1;min-width:130px;margin-bottom:0;">
+                            <label>Usuário</label>
+                            <input type="text" id="new-acc-user" placeholder="amigo">
+                        </div>
+                        <div class="form-group" style="flex:1;min-width:130px;margin-bottom:0;">
+                            <label>Senha</label>
+                            <input type="password" id="new-acc-pass" placeholder="mín. 6 caracteres">
+                        </div>
+                        <div class="form-group" style="min-width:110px;margin-bottom:0;">
+                            <label>Tipo</label>
+                            <select id="new-acc-role">
+                                <option value="user">Usuário</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <button class="btn" style="flex-shrink:0;" onclick="createAccountUI()">Criar</button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Token</label>
-                    <input type="password" id="upstash-token" placeholder="Token do Upstash">
-                </div>
-                <button class="btn" onclick="saveUpstashConfig()">Salvar Upstash</button>
             </div>
 
             <!-- Vercel + GitHub -->
@@ -726,13 +799,42 @@ function hideAllMessages() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  Campanhas — localStorage
+//  Sessão + API do Painel (isolamento server-side)
 // ════════════════════════════════════════════════════════════
-function getCampaigns() {
-    try { return JSON.parse(localStorage.getItem('cloaker_campaigns') || '[]'); } catch { return []; }
+let _me = null, _myRole = null;
+
+function apiBase() {
+    return (localStorage.getItem('vercel_url') || 'https://meu-cloaker.vercel.app').replace(/\/$/, '');
 }
-function saveCampaigns(arr) {
-    localStorage.setItem('cloaker_campaigns', JSON.stringify(arr));
+function getSession()   { return localStorage.getItem('_sess') || ''; }
+function setSession(t)  { localStorage.setItem('_sess', t); }
+function clearSession() { localStorage.removeItem('_sess'); }
+
+// Chamada crua ao painel (sem redirect automático) — usada em status/login/setup/me
+async function rawPanel(action, payload) {
+    const res = await fetch(apiBase() + '/api/panel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getSession() },
+        body: JSON.stringify({ action, ...(payload || {}) }),
+    });
+    return res.json().catch(() => ({ ok: false, error: 'Resposta inválida do servidor.' }));
+}
+// Chamada autenticada — se a sessão expirar, derruba para a tela de login
+async function panelCall(action, payload) {
+    const j = await rawPanel(action, payload);
+    if (j && j.authRequired) { clearSession(); showLogin(); throw new Error('Sessão expirada.'); }
+    return j;
+}
+
+// ════════════════════════════════════════════════════════════
+//  Campanhas — fonte de verdade no servidor (cache em memória)
+// ════════════════════════════════════════════════════════════
+function getCampaigns() { return window._campaigns || []; }
+async function loadCampaigns() {
+    const j = await panelCall('listCampaigns', {});
+    // Mapeia blackUrl (servidor) -> ofertaBlack (usado pela UI)
+    window._campaigns = (j.campaigns || []).map(c => ({ ...c, ofertaBlack: c.blackUrl }));
+    return window._campaigns;
 }
 function genId() {
     return 'camp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
@@ -746,8 +848,12 @@ function platformLabel(p) {
 // ════════════════════════════════════════════════════════════
 async function loadHome() {
     const grid = document.getElementById('campaigns-grid');
-    const campaigns = getCampaigns();
     hideAllMessages();
+
+    // Carrega campanhas do servidor (escopadas à conta logada)
+    try { await loadCampaigns(); }
+    catch (e) { showMessage('home-msg', 'Erro ao carregar campanhas: ' + e.message, 'error'); }
+    const campaigns = getCampaigns();
 
     if (!campaigns.length) {
         grid.innerHTML = `<div class="empty-state">
@@ -818,35 +924,11 @@ function renderCard(camp, stats) {
 
 async function deleteCampaign(id) {
     if (!confirm('Excluir esta campanha? Os logs não serão apagados.')) return;
-    saveCampaigns(getCampaigns().filter(c => c.id !== id));
-    try { await redisDelCampaign(id); } catch {}
+    try {
+        const j = await panelCall('deleteCampaign', { id });
+        if (!j.ok) { showMessage('home-msg', j.error || 'Falha ao excluir.', 'error'); return; }
+    } catch (e) { showMessage('home-msg', e.message, 'error'); return; }
     loadHome();
-}
-
-// ─── Sincronização da campanha com o Redis (oferta vive no servidor) ─────────
-// A URL da oferta NUNCA vai no payload do script — o servidor a busca aqui.
-async function redisSetCampaign(camp) {
-    const { url, token } = getUpstashCreds();
-    const value = JSON.stringify({
-        blackUrl:  camp.ofertaBlack,
-        platform:  camp.platform,
-        whiteUrl:  camp.whiteUrl  || '',
-        anticlone: !!camp.anticlone,
-        burnToken: !!camp.burnToken,
-    });
-    const res = await fetch(`${url}/set/${encodeURIComponent('campaign:' + camp.id)}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: value
-    });
-    if (!res.ok) throw new Error(`Falha ao sincronizar campanha (${res.status})`);
-}
-async function redisDelCampaign(id) {
-    const { url, token } = getUpstashCreds();
-    await fetch(`${url}/del/${encodeURIComponent('campaign:' + id)}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-    });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -912,29 +994,29 @@ async function saveCampaign() {
     if (!platform)    { showMessage('campaign-msg', 'Selecione a plataforma.',    'error');    return; }
     if (!ofertaBlack) { showMessage('campaign-msg', 'Digite o link da oferta.',   'error');    return; }
 
-    const campaigns = getCampaigns();
-    let camp;
-    if (id) {
-        const idx = campaigns.findIndex(c => c.id === id);
-        if (idx >= 0) { campaigns[idx] = { ...campaigns[idx], name, platform, ofertaBlack, whiteUrl, anticlone, burnToken }; camp = campaigns[idx]; }
-    }
-    if (!camp) {
-        camp = { id: genId(), name, platform, ofertaBlack, whiteUrl, anticlone, burnToken, createdAt: new Date().toISOString() };
-        campaigns.push(camp);
-    }
-    saveCampaigns(campaigns);
+    const campId = id || genId();
+    const camp = { id: campId, name, platform, ofertaBlack, whiteUrl, anticlone, burnToken };
 
-    // Sincroniza a oferta com o Redis — sem isso o servidor não resolve a black URL.
-    let syncWarn = '';
-    try { await redisSetCampaign(camp); }
-    catch (e) { syncWarn = ' ⚠️ Mas a sincronização com o Redis falhou: ' + e.message + ' (configure o Upstash). A oferta precisa estar no Redis para o modo furtivo funcionar.'; }
+    // Salva no servidor (escopado à conta logada). A oferta vive no Redis.
+    try {
+        const j = await panelCall('saveCampaign', {
+            campaign: { id: campId, name, platform, blackUrl: ofertaBlack, whiteUrl, anticlone, burnToken },
+        });
+        if (!j.ok) { showMessage('campaign-msg', '⚠️ ' + (j.error || 'Falha ao salvar.'), 'error'); return; }
+    } catch (e) {
+        showMessage('campaign-msg', '⚠️ Falha ao salvar: ' + e.message, 'error');
+        return;
+    }
+
+    // Atualiza o cache local
+    try { await loadCampaigns(); } catch {}
 
     document.getElementById('campaign-id').value = camp.id;
     document.getElementById('campaign-form-title').textContent = 'Editar Campanha';
     refreshCampaignScript(camp);
     document.getElementById('campaign-script-section').style.display = 'block';
-    showMessage('campaign-msg', (syncWarn ? '✓ Campanha salva localmente.' + syncWarn : '✓ Campanha salva e sincronizada! Script pronto abaixo.'), syncWarn ? 'error' : 'success');
-    setTimeout(() => hideAllMessages(), syncWarn ? 8000 : 4000);
+    showMessage('campaign-msg', '✓ Campanha salva e sincronizada! Script pronto abaixo.', 'success');
+    setTimeout(() => hideAllMessages(), 4000);
 }
 
 function refreshCampaignScript(camp) {
@@ -953,10 +1035,10 @@ function copyCampaignScript() {
 //  Script de integração (gerado por campanha)
 // ════════════════════════════════════════════════════════════
 function buildScript(camp) {
-    const vercelUrl = (localStorage.getItem('vercel_url') || '').replace(/\/$/, '');
+    const vercelUrl = apiBase();
     // Endpoint neutro /api/v — nome não revela função de cloaking
     // /api/filtrar segue funcionando para scripts legados já em produção
-    if (!vercelUrl) return '// Configure a URL da Vercel na aba Configurações primeiro.';
+    if (!vercelUrl) return '// Configure a URL da API na aba Configurações primeiro.';
 
     const ep    = escJs(vercelUrl + '/api/v');
     const white = escJs(camp.whiteUrl || '');
@@ -1041,24 +1123,12 @@ function copyModalScript() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
 
 // ════════════════════════════════════════════════════════════
-//  Upstash helpers
+//  Logs — via painel (escopados à conta logada)
 // ════════════════════════════════════════════════════════════
-// getUpstashCreds é alias sync para compat com código restante que não é async-crítico
-function getUpstashCreds() {
-    const url   = localStorage.getItem('upstash_url');
-    const token = localStorage.getItem('upstash_token');
-    if (!url || !token) throw new Error('Configure e salve as credenciais do Upstash primeiro.');
-    return { url, token };
-}
-
 async function fetchAllLogs(limit) {
-    const { url, token } = await getUpstashCredsAsync().catch(() => getUpstashCreds());
-    const res = await fetch(`${url}/lrange/cloaker_logs/0/${limit - 1}`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error(`Upstash erro ${res.status}`);
-    const data = await res.json();
-    return (data.result || []).map(entry => {
+    const j = await panelCall('getLogs', { limit });
+    if (!j.ok) throw new Error(j.error || 'Falha ao buscar logs.');
+    return (j.logs || []).map(entry => {
         try { const p = JSON.parse(entry); return typeof p === 'string' ? JSON.parse(p) : p; }
         catch { return null; }
     }).filter(Boolean);
@@ -1158,15 +1228,12 @@ function renderLogs(logs) {
 }
 
 async function clearLogs() {
-    if (!confirm('Apagar todos os logs?')) return;
+    if (!confirm('Apagar todos os seus logs?')) return;
     const btn = document.getElementById('btnClearLogs');
     btn.disabled = true;
     try {
-        const { url, token } = getUpstashCreds();
-        const res = await fetch(`${url}/del/cloaker_logs`, {
-            method: 'POST', headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+        const j = await panelCall('clearLogs', {});
+        if (!j.ok) throw new Error(j.error || 'Falha ao limpar.');
         window._allLogs = [];
         renderLogs([]);
         document.getElementById('logs-count').textContent = '0 registro(s)';
@@ -1180,33 +1247,6 @@ async function clearLogs() {
 // ════════════════════════════════════════════════════════════
 //  Configurações
 // ════════════════════════════════════════════════════════════
-function saveUpstashConfig() {
-    const url   = document.getElementById('upstash-url').value.trim().replace(/\/$/, '');
-    const token = document.getElementById('upstash-token').value.trim();
-    if (!url || !token) { showMessage('config-msg', 'Preencha a URL e o Token.', 'error'); return; }
-    localStorage.setItem('upstash_url',   url);
-    localStorage.setItem('upstash_token', token);
-    showMessage('config-msg', 'Credenciais Upstash salvas!', 'success');
-    setTimeout(() => hideAllMessages(), 3000);
-}
-
-function saveConfig(e) {
-    e.preventDefault();
-    const token     = document.getElementById('gh-token').value.trim();
-    const repo      = document.getElementById('gh-repo').value.trim();
-    const branch    = document.getElementById('gh-branch').value.trim()  || 'main';
-    const path      = document.getElementById('gh-path').value.trim()    || 'api/filtrar.mjs';
-    const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
-    if (!token || !repo) { showMessage('config-msg', 'Preencha o Token e o Repositório.', 'error'); return; }
-    localStorage.setItem('gh_token',   token);
-    localStorage.setItem('gh_repo',    repo);
-    localStorage.setItem('gh_branch',  branch);
-    localStorage.setItem('gh_path',    path);
-    localStorage.setItem('vercel_url', vercelUrl);
-    showMessage('config-msg', 'Configurações salvas!', 'success');
-    setTimeout(() => hideAllMessages(), 3000);
-}
-
 // ════════════════════════════════════════════════════════════
 //  Navegação
 // ════════════════════════════════════════════════════════════
@@ -1234,7 +1274,7 @@ function switchTab(tabId) {
 //  • Se não houver senha mestra, funciona sem criptografia (compat)
 // ════════════════════════════════════════════════════════════
 const _SALT = 'cloaker_salt_v2';
-const _CRED_KEYS = ['gh_token','gh_repo','gh_branch','gh_path','vercel_url','upstash_url','upstash_token'];
+const _CRED_KEYS = ['gh_token','gh_repo','gh_branch','gh_path'];
 
 async function _deriveKey(password) {
     const enc = new TextEncoder();
@@ -1314,32 +1354,19 @@ async function skipMasterPw() {
 }
 
 async function loadAllConfig() {
-    document.getElementById('upstash-url').value   = await getCred('upstash_url')   || '';
-    document.getElementById('upstash-token').value = await getCred('upstash_token') || '';
-    document.getElementById('gh-token').value      = await getCred('gh_token')      || '';
-    document.getElementById('gh-repo').value       = await getCred('gh_repo')       || '';
-    document.getElementById('gh-branch').value     = await getCred('gh_branch')     || 'main';
-    document.getElementById('gh-path').value       = await getCred('gh_path')       || 'api/filtrar.mjs';
-    document.getElementById('vercel-url').value    = await getCred('vercel_url')    || '';
-    // Atualiza status da proteção
-    const mpActive = !!_getMasterPw();
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    set('gh-token',   await getCred('gh_token')   || '');
+    set('gh-repo',    await getCred('gh_repo')    || '');
+    set('gh-branch',  await getCred('gh_branch')  || 'main');
+    set('gh-path',    await getCred('gh_path')    || 'api/filtrar.mjs');
+    set('vercel-url', localStorage.getItem('vercel_url') || apiBase());
+    // Status da proteção AES (apenas para o token do GitHub)
     const mpEl = document.getElementById('mp-status');
-    if (mpEl) mpEl.innerHTML = mpActive
+    if (mpEl) mpEl.innerHTML = _getMasterPw()
         ? '<span style="color:#34d399">✓ Proteção ativa nesta sessão</span>'
         : (hasEncryptedCreds() ? '<span style="color:#eab308">⚠ Credenciais cifradas — ative a proteção</span>' : '<span style="color:#94a3b8">Sem proteção ativa</span>');
 }
 
-// Override das funções de config para usar armazenamento seguro
-async function saveUpstashConfig() {
-    const url   = document.getElementById('upstash-url').value.trim().replace(/\/$/, '');
-    const token = document.getElementById('upstash-token').value.trim();
-    if (!url || !token) { showMessage('config-msg','Preencha a URL e o Token.','error'); return; }
-    await setCred('upstash_url',   url);
-    await setCred('upstash_token', token);
-    const enc = !!_getMasterPw();
-    showMessage('config-msg', enc ? '🔐 Credenciais Upstash salvas com criptografia!' : 'Credenciais Upstash salvas!','success');
-    setTimeout(() => hideAllMessages(), 3000);
-}
 async function saveConfig(e) {
     e.preventDefault();
     const token     = document.getElementById('gh-token').value.trim();
@@ -1347,37 +1374,164 @@ async function saveConfig(e) {
     const branch    = document.getElementById('gh-branch').value.trim()  || 'main';
     const path      = document.getElementById('gh-path').value.trim()    || 'api/filtrar.mjs';
     const vercelUrl = document.getElementById('vercel-url').value.trim().replace(/\/$/, '');
-    if (!token || !repo) { showMessage('config-msg','Preencha o Token e o Repositório.','error'); return; }
-    await setCred('gh_token',   token);
-    await setCred('gh_repo',    repo);
-    await setCred('gh_branch',  branch);
-    await setCred('gh_path',    path);
-    await setCred('vercel_url', vercelUrl);
+    // vercel_url é URL pública (não é segredo) — fica em texto puro p/ login funcionar antes da sessão
+    if (vercelUrl) localStorage.setItem('vercel_url', vercelUrl);
+    // GitHub token é sensível → cifrado se a senha mestra estiver ativa
+    if (token) await setCred('gh_token', token);
+    await setCred('gh_repo',   repo);
+    await setCred('gh_branch', branch);
+    await setCred('gh_path',   path);
     const enc = !!_getMasterPw();
     showMessage('config-msg', enc ? '🔐 Configurações salvas com criptografia!' : 'Configurações salvas!','success');
     setTimeout(() => hideAllMessages(), 3000);
 }
 
-// getUpstashCreds precisa ser async agora
-async function getUpstashCredsAsync() {
-    const url   = await getCred('upstash_url');
-    const token = await getCred('upstash_token');
-    if (!url || !token) throw new Error('Configure e salve as credenciais do Upstash primeiro.');
-    return { url, token };
+// ════════════════════════════════════════════════════════════
+//  Autenticação (login / setup / logout) — isolamento por conta
+// ════════════════════════════════════════════════════════════
+function _authPane(name) {
+    ['auth-loading','auth-login','auth-setup'].forEach(p =>
+        document.getElementById(p).style.display = (p === name ? 'block' : 'none'));
+    document.getElementById('auth-overlay').style.display = 'flex';
+    document.getElementById('app-root').style.display = 'none';
+}
+function showLogin() { _authPane('auth-login'); }
+function showSetup() { _authPane('auth-setup'); }
+
+async function initAuth() {
+    _authPane('auth-loading');
+    // Já tem sessão salva? valida com 'me'
+    if (getSession()) {
+        const j = await rawPanel('me', {});
+        if (j && j.ok) { _me = j.username; _myRole = j.role; return enterApp(); }
+        clearSession();
+    }
+    // Sem sessão → painel já tem admin configurado?
+    let configured = true;
+    try { const s = await rawPanel('status', {}); configured = !!(s && s.ok && s.configured); }
+    catch { configured = true; }
+    configured ? showLogin() : showSetup();
+}
+
+async function doLogin() {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value;
+    const base = document.getElementById('login-apibase').value.trim();
+    if (base) localStorage.setItem('vercel_url', base.replace(/\/$/, ''));
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    if (!u || !p) { errEl.textContent = 'Preencha usuário e senha.'; return; }
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Entrando…';
+    try {
+        const j = await rawPanel('login', { username: u, password: p });
+        if (!j.ok) { errEl.textContent = j.error || 'Falha no login.'; return; }
+        setSession(j.token); _me = j.username; _myRole = j.role;
+        document.getElementById('login-pass').value = '';
+        enterApp();
+    } catch (e) { errEl.textContent = 'Erro de conexão: ' + e.message; }
+    finally { btn.disabled = false; btn.textContent = 'Entrar'; }
+}
+
+async function doSetup() {
+    const u = document.getElementById('setup-user').value.trim();
+    const p = document.getElementById('setup-pass').value;
+    const base = document.getElementById('setup-apibase').value.trim();
+    if (base) localStorage.setItem('vercel_url', base.replace(/\/$/, ''));
+    const errEl = document.getElementById('setup-error');
+    errEl.textContent = '';
+    if (!u || !p) { errEl.textContent = 'Preencha usuário e senha.'; return; }
+    const btn = document.getElementById('setup-btn');
+    btn.disabled = true; btn.textContent = 'Criando…';
+    try {
+        const j = await rawPanel('setup', { username: u, password: p });
+        if (!j.ok) { errEl.textContent = j.error || 'Falha ao criar conta.'; return; }
+        setSession(j.token); _me = j.username; _myRole = j.role;
+        enterApp();
+    } catch (e) { errEl.textContent = 'Erro de conexão: ' + e.message; }
+    finally { btn.disabled = false; btn.textContent = 'Criar e entrar'; }
+}
+
+function logout() {
+    clearSession();
+    _me = null; _myRole = null;
+    window._campaigns = []; window._allLogs = [];
+    showLogin();
+}
+
+function enterApp() {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('app-root').style.display = '';
+    document.getElementById('sidebar-user').textContent =
+        '👤 ' + _me + (_myRole === 'admin' ? '  (admin)' : '');
+    const isAdmin = _myRole === 'admin';
+    document.getElementById('nav-users').style.display    = isAdmin ? 'block' : 'none';
+    document.getElementById('users-section').style.display = isAdmin ? 'block' : 'none';
+    activateTab('home');
+    loadAllConfig();
+    loadHome();
+}
+
+// ════════════════════════════════════════════════════════════
+//  Gestão de usuários (admin)
+// ════════════════════════════════════════════════════════════
+async function loadAccounts() {
+    if (_myRole !== 'admin') return;
+    const box = document.getElementById('accounts-list');
+    box.innerHTML = '<div style="color:var(--text-secondary);font-size:0.83rem;">Carregando…</div>';
+    try {
+        const j = await panelCall('listAccounts', {});
+        if (!j.ok) { box.innerHTML = `<div style="color:#f87171;font-size:0.83rem;">${escHtml(j.error||'Erro')}</div>`; return; }
+        if (!j.accounts.length) { box.innerHTML = '<div style="color:var(--text-secondary);font-size:0.83rem;">Nenhum usuário.</div>'; return; }
+        box.innerHTML = j.accounts.map(a => {
+            const tag = a.role === 'admin'
+                ? '<span style="font-size:0.65rem;font-weight:700;color:#a78bfa;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.25);padding:0.1rem 0.45rem;border-radius:999px;">ADMIN</span>'
+                : '<span style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);background:rgba(255,255,255,0.05);padding:0.1rem 0.45rem;border-radius:999px;">usuário</span>';
+            const isMe = a.username === _me;
+            const delBtn = isMe
+                ? '<span style="font-size:0.72rem;color:var(--text-secondary);">você</span>'
+                : `<button class="btn-icon danger" title="Excluir" onclick="deleteAccountUI('${escHtml(a.username)}')">🗑️</button>`;
+            return `<div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.6rem 0.85rem;background:rgba(0,0,0,0.2);border:1px solid var(--border-color);border-radius:8px;margin-bottom:0.5rem;">
+                <div style="display:flex;align-items:center;gap:0.6rem;min-width:0;">
+                    <span style="font-weight:500;font-size:0.88rem;">${escHtml(a.username)}</span>${tag}
+                </div>
+                ${delBtn}
+            </div>`;
+        }).join('');
+    } catch (e) { box.innerHTML = `<div style="color:#f87171;font-size:0.83rem;">${escHtml(e.message)}</div>`; }
+}
+
+async function createAccountUI() {
+    const u = document.getElementById('new-acc-user').value.trim();
+    const p = document.getElementById('new-acc-pass').value;
+    const role = document.getElementById('new-acc-role').value;
+    if (!u || !p) { showMessage('config-msg', 'Preencha usuário e senha do novo usuário.', 'error'); return; }
+    try {
+        const j = await panelCall('createAccount', { username: u, password: p, role });
+        if (!j.ok) { showMessage('config-msg', j.error || 'Falha ao criar usuário.', 'error'); return; }
+        document.getElementById('new-acc-user').value = '';
+        document.getElementById('new-acc-pass').value = '';
+        showMessage('config-msg', `✓ Usuário "${escHtml(u)}" criado!`, 'success');
+        setTimeout(() => hideAllMessages(), 3000);
+        loadAccounts();
+    } catch (e) { showMessage('config-msg', e.message, 'error'); }
+}
+
+async function deleteAccountUI(username) {
+    if (!confirm(`Excluir o usuário "${username}"?\n\nTodas as campanhas e logs dele serão apagados permanentemente.`)) return;
+    try {
+        const j = await panelCall('deleteAccount', { username });
+        if (!j.ok) { showMessage('config-msg', j.error || 'Falha ao excluir.', 'error'); return; }
+        showMessage('config-msg', `Usuário "${escHtml(username)}" excluído.`, 'success');
+        setTimeout(() => hideAllMessages(), 3000);
+        loadAccounts();
+    } catch (e) { showMessage('config-msg', e.message, 'error'); }
 }
 
 // ════════════════════════════════════════════════════════════
 //  Init
 // ════════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', async () => {
-    // Se há credenciais cifradas mas sem senha na sessão → pedir senha
-    if (hasEncryptedCreds() && !_getMasterPw()) {
-        document.getElementById('modal-pw-overlay').style.display = 'flex';
-        return;
-    }
-    await loadAllConfig();
-    loadHome();
-});
+window.addEventListener('DOMContentLoaded', initAuth);
 </script>
 </body>
 </html>
