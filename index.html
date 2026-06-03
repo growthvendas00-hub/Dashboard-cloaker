@@ -256,9 +256,6 @@
         .help-guide > summary::-webkit-details-marker { display: none; }
         .help-guide > summary::after { content: '▾'; color: var(--text-secondary); transition: transform 0.2s; }
         .help-guide[open] > summary::after { transform: rotate(180deg); }
-        .help-guide ol { margin: 0.25rem 0 1rem; padding-left: 1.3rem; }
-        .help-guide li { font-size: 0.88rem; line-height: 1.65; color: var(--text-secondary); margin-bottom: 0.55rem; }
-        .help-guide li strong { color: var(--text-primary); }
         .help-guide code {
             background: rgba(0,0,0,0.4);
             padding: 0.08rem 0.4rem;
@@ -271,11 +268,99 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             border-top: 1px solid var(--border-color);
-            padding: 0.75rem 0;
-            margin-top: 0.25rem;
+            padding: 0.85rem 0 0.4rem;
+            margin-top: 0.5rem;
         }
         .help-badge-green { color: #34d399; font-weight: 600; }
         .help-badge-red   { color: #f87171; font-weight: 600; }
+
+        /* ── Steps visuais (cards numerados) ── */
+        .steps-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.6rem;
+            margin: 0.5rem 0 0.25rem;
+        }
+        @media (max-width: 720px) { .steps-row { grid-template-columns: repeat(2, 1fr); } }
+        .step-chip {
+            position: relative;
+            background: rgba(0,0,0,0.22);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.85rem 0.7rem;
+            text-align: center;
+        }
+        .step-num {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 22px; height: 22px; border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #a78bfa);
+            color: #fff; font-size: 0.72rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+        }
+        .step-ico  { font-size: 1.5rem; margin: 0.35rem 0 0.4rem; }
+        .step-ttl  { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+        .step-sub  { font-size: 0.68rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.35; }
+
+        /* ── Demonstração animada (mini-vídeo em CSS, loop) ── */
+        .demo-wrap { margin: 0.5rem 0 1.1rem; }
+        .demo-cap-top { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+        .demo-live { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: demoPulse 1.4s ease-in-out infinite; }
+        @keyframes demoPulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+        .demo-screen {
+            position: relative;
+            height: 210px;
+            background: #0b1222;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .demo-bar { display: flex; gap: 0.4rem; padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .demo-stage { position: relative; height: calc(210px - 39px); }
+        .demo-slide {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.55rem; padding: 0.9rem 1.1rem; opacity: 0;
+        }
+        .demo-slide .d-step { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+            color: #a78bfa; }
+        .demo-slide .d-ttl  { font-size: 1.02rem; font-weight: 700; color: #f8fafc; text-align: center; }
+        .demo-slide .d-ico  { font-size: 1.9rem; }
+        .demo-mock {
+            width: 100%; max-width: 340px; background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color); border-radius: 9px; padding: 0.7rem 0.8rem;
+            font-size: 0.78rem; color: var(--text-secondary);
+        }
+        .d-field { background: rgba(0,0,0,0.35); border: 1px solid var(--border-color); border-radius: 6px;
+            padding: 0.35rem 0.55rem; margin-bottom: 0.4rem; color: #cbd5e1; font-size: 0.74rem; }
+        .d-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+        .d-chip  { font-size: 0.68rem; padding: 0.18rem 0.5rem; border-radius: 999px; border: 1px solid var(--border-color); }
+        .d-chip.on { background: rgba(59,130,246,0.18); border-color: rgba(59,130,246,0.5); color: #93c5fd; }
+        .d-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.72rem; color: #93c5fd;
+            background: rgba(0,0,0,0.4); border-radius: 6px; padding: 0.55rem 0.65rem; line-height: 1.6; white-space: pre; overflow: hidden; }
+        .d-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600;
+            padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+        .d-logrow { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+            font-size: 0.72rem; padding: 0.3rem 0.5rem; border-radius: 6px; margin-bottom: 0.35rem; }
+        .d-logrow.ok  { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #34d399; }
+        .d-logrow.no  { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.25);  color: #f87171; }
+
+        /* Cross-fade dos 5 slides (loop perfeito, 20s) */
+        .demo-slide.s1 { animation: dFade1 20s infinite; }
+        .demo-slide.s2 { animation: dFade2 20s infinite; }
+        .demo-slide.s3 { animation: dFade3 20s infinite; }
+        .demo-slide.s4 { animation: dFade4 20s infinite; }
+        .demo-slide.s5 { animation: dFade5 20s infinite; }
+        @keyframes dFade1 { 0%{opacity:1} 16%{opacity:1} 20%{opacity:0} 95%{opacity:0} 100%{opacity:1} }
+        @keyframes dFade2 { 0%,16%{opacity:0} 20%{opacity:1} 36%{opacity:1} 40%{opacity:0} 100%{opacity:0} }
+        @keyframes dFade3 { 0%,36%{opacity:0} 40%{opacity:1} 56%{opacity:1} 60%{opacity:0} 100%{opacity:0} }
+        @keyframes dFade4 { 0%,56%{opacity:0} 60%{opacity:1} 76%{opacity:1} 80%{opacity:0} 100%{opacity:0} }
+        @keyframes dFade5 { 0%,76%{opacity:0} 80%{opacity:1} 95%{opacity:1} 100%{opacity:0} }
+        @media (prefers-reduced-motion: reduce) {
+            .demo-slide.s1,.demo-slide.s2,.demo-slide.s3,.demo-slide.s4,.demo-slide.s5 { animation: none; }
+            .demo-slide.s1 { opacity: 1; }
+        }
 
         /* ── Campaign Grid ── */
         .campaigns-grid {
@@ -550,16 +635,92 @@
 
             <!-- Guia passo a passo (para o usuário não ficar perdido) -->
             <details id="help-guide" class="help-guide" open>
-                <summary>📖 Como usar o cloaker — passo a passo</summary>
-                <ol>
-                    <li><strong>Crie uma campanha:</strong> clique em <strong>"+ Nova Campanha"</strong>, dê um nome, escolha a <strong>plataforma</strong> (Facebook, Google, TikTok ou Kwai) e cole o <strong>link da sua oferta</strong> (a página que o cliente real deve ver).</li>
-                    <li><strong>URL White (opcional):</strong> uma página "limpa" pra mostrar aos bots/revisores. Pode deixar em branco.</li>
-                    <li><strong>Anticlone (opcional):</strong> marque <em>"Exigir clique direto no anúncio"</em> para bloquear quem não clicou no seu anúncio (link copiado/compartilhado).</li>
-                    <li><strong>Salve a campanha:</strong> o <strong>Script de Integração</strong> aparece automaticamente logo abaixo. Clique em <strong>📋 Copiar</strong>.</li>
-                    <li><strong>Cole o script no seu site:</strong> dentro do <code>&lt;head&gt;</code> da página de origem (onde cai o tráfego do anúncio). Publique o site. <strong>Pronto, o cloaker está ativo! ✅</strong></li>
-                    <li><strong>Acompanhe:</strong> na aba <strong>📊 Logs</strong> você vê em tempo real — <span class="help-badge-green">verde = cliente aprovado</span>, <span class="help-badge-red">vermelho = bot bloqueado</span>.</li>
-                </ol>
-                <div class="help-foot">🔒 Sua conta é isolada: você só vê as <strong>suas</strong> campanhas e logs. Configure o seu GitHub em <strong>⚙️ Configurações → Meu GitHub</strong> (opcional).</div>
+                <summary>📖 Como usar o cloaker — guia visual</summary>
+
+                <!-- Demonstração animada (loop, CSS puro) -->
+                <div class="demo-wrap">
+                    <div class="demo-cap-top"><span class="demo-live"></span> Demonstração — roda sozinho, em loop</div>
+                    <div class="demo-screen">
+                        <div class="demo-bar">
+                            <span class="demo-dot" style="background:#ef4444"></span>
+                            <span class="demo-dot" style="background:#eab308"></span>
+                            <span class="demo-dot" style="background:#22c55e"></span>
+                        </div>
+                        <div class="demo-stage">
+                            <!-- Slide 1 -->
+                            <div class="demo-slide s1">
+                                <div class="d-step">Passo 1</div>
+                                <div class="d-ico">➕</div>
+                                <div class="d-ttl">Crie sua campanha</div>
+                                <div class="demo-mock">
+                                    <div class="d-field">Nome: Oferta Junho</div>
+                                    <div class="d-chips" style="margin-bottom:0.4rem;">
+                                        <span class="d-chip on">📘 Facebook</span>
+                                        <span class="d-chip">🔍 Google</span>
+                                        <span class="d-chip">🎵 TikTok</span>
+                                    </div>
+                                    <div class="d-field">🔗 link da sua oferta…</div>
+                                </div>
+                            </div>
+                            <!-- Slide 2 -->
+                            <div class="demo-slide s2">
+                                <div class="d-step">Passo 2 · opcional</div>
+                                <div class="d-ico">🔒</div>
+                                <div class="d-ttl">Ative o Anticlone</div>
+                                <div class="demo-mock">
+                                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                                        <span style="color:#34d399;">☑</span> Exigir clique direto no anúncio
+                                    </div>
+                                    <div style="font-size:0.7rem;margin-top:0.4rem;">Bloqueia link copiado / compartilhado</div>
+                                </div>
+                            </div>
+                            <!-- Slide 3 -->
+                            <div class="demo-slide s3">
+                                <div class="d-step">Passo 3</div>
+                                <div class="d-ico">📋</div>
+                                <div class="d-ttl">Copie o script gerado</div>
+                                <div class="demo-mock">
+                                    <div class="d-code">&lt;script&gt;…cloaker…&lt;/script&gt;</div>
+                                    <div style="margin-top:0.5rem;text-align:center;">
+                                        <span class="d-pill">✓ Copiado!</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Slide 4 -->
+                            <div class="demo-slide s4">
+                                <div class="d-step">Passo 4</div>
+                                <div class="d-ico">🧩</div>
+                                <div class="d-ttl">Cole no &lt;head&gt; do seu site</div>
+                                <div class="demo-mock">
+                                    <div class="d-code">&lt;head&gt;
+  &lt;script&gt;…cloaker…&lt;/script&gt;
+&lt;/head&gt;</div>
+                                </div>
+                            </div>
+                            <!-- Slide 5 -->
+                            <div class="demo-slide s5">
+                                <div class="d-step">Passo 5</div>
+                                <div class="d-ico">📊</div>
+                                <div class="d-ttl">Pronto! Acompanhe nos Logs</div>
+                                <div class="demo-mock">
+                                    <div class="d-logrow ok"><span>✔ Cliente real</span><span>aprovado → oferta</span></div>
+                                    <div class="d-logrow no"><span>✖ Bot / revisor</span><span>bloqueado</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passos em cards numerados -->
+                <div class="steps-row">
+                    <div class="step-chip"><div class="step-num">1</div><div class="step-ico">➕</div><div class="step-ttl">Criar campanha</div><div class="step-sub">Nome, plataforma e link da oferta</div></div>
+                    <div class="step-chip"><div class="step-num">2</div><div class="step-ico">🔒</div><div class="step-ttl">Anticlone</div><div class="step-sub">Opcional: exige clique no anúncio</div></div>
+                    <div class="step-chip"><div class="step-num">3</div><div class="step-ico">📋</div><div class="step-ttl">Copiar script</div><div class="step-sub">Gerado ao salvar a campanha</div></div>
+                    <div class="step-chip"><div class="step-num">4</div><div class="step-ico">🧩</div><div class="step-ttl">Colar no site</div><div class="step-sub">Dentro do <code>&lt;head&gt;</code> da origem</div></div>
+                    <div class="step-chip"><div class="step-num">5</div><div class="step-ico">📊</div><div class="step-ttl">Acompanhar</div><div class="step-sub">Aba Logs em tempo real</div></div>
+                </div>
+
+                <div class="help-foot">🔒 Sua conta é isolada: você só vê as <strong>suas</strong> campanhas e logs. Conecte o seu GitHub em <strong>⚙️ Configurações → Meu GitHub</strong> (opcional).</div>
             </details>
 
             <div id="home-msg" class="alert"></div>
